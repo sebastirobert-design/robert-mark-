@@ -1,0 +1,46 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Center safe area is 21 to 87 (66dp wide/high) -->
+    <!-- Open Book Base -->
+    <path
+        android:fillColor="#E0E7FF"
+        android:pathData="M26,72 C35,68 47,68 54,72 C61,68 73,68 82,72 L82,46 C73,42 61,42 54,46 C47,42 35,42 26,46 Z" />
+    <!-- Book Pages Details -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,69 C36,65.5 46,65.5 53,69 L53,45 C46,41.5 36,41.5 28,45 Z" />
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M80,69 C72,65.5 62,65.5 55,69 L55,45 C62,41.5 72,41.5 80,45 Z" />
+    <!-- Book Spine Divider -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M53.2,45 L54.8,45 L54.8,71 L53.2,71 Z" />
+    <!-- Graduation Cap Top (Mortarboard) -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M54,26 L76,34 L54,42 L32,34 Z" />
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M54,42 L76,34 L76,36 L54,44 L32,36 L32,34 Z" />
+    <!-- Skullcap below mortarboard -->
+    <path
+        android:fillColor="#FFA000"
+        android:pathData="M42,39 C42,45 66,45 66,39 L66,37 L42,37 Z" />
+    <!-- Cap Tassel -->
+    <path
+        android:fillColor="#FFF9C4"
+        android:pathData="M70,36 L74,48 L71,48 L68,36 Z" />
+    <!-- Marks Checkmark / Star in Gold -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M46,57 L51,62 L62,51 L59.5,48.5 L51,57 L48.5,54.5 Z" />
+    <!-- Pen Tip / Ribbon detail -->
+    <path
+        android:fillColor="#FF5252"
+        android:pathData="M52.5,70 L55.5,70 L54,77 Z" />
+</vector>
+

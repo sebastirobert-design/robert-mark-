@@ -1,0 +1,7 @@
+{
+  "name": "மதிப்பெண் பதிவேடு",
+  "description": "ஊராட்சி ஒன்றிய நடுநிலைப்பள்ளி மாணவர் CCE மதிப்பெண்கள், முப்பருவ சராசரி மற்றும் சான்றிதழ் ஒருங்கிணைப்பு செயலி (Panchayat Union Middle School CCE Marks Register & Annual Certificate Generator)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
