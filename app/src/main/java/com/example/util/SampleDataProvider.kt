@@ -30,6 +30,51 @@ object SampleDataProvider {
 
         if (hasOldSampleData) {
             populateOfficialStudents(repository, forceReset = true)
+        } else {
+            // Ensure any existing students in Class 1 to 3 have EVS marks populated
+            val primaryStudents = existingStudents.filter { it.stdClass in 1..3 }
+            for (student in primaryStudents) {
+                for (term in 1..3) {
+                    val marks = repository.getMarksForStudentAndTerm(student.id, term).firstOrNull() ?: emptyList()
+                    if (marks.none { it.subjectKey == Subject.EVS.key }) {
+                        val studentId = student.id
+                        val n1Oral = 8 + (studentId % 3).toInt()
+                        val n1Act = 8 + (studentId % 3).toInt()
+                        val n1Wri = 4 + (studentId % 2).toInt()
+                        val n2Oral = 8 + (studentId % 3).toInt()
+                        val n2Act = 8 + (studentId % 3).toInt()
+                        val n2Wri = 4 + (studentId % 2).toInt()
+                        val thOral = 8 + (studentId % 3).toInt()
+                        val thWri = 32 + ((studentId * 2) % 9).toInt()
+                        val tot = n1Oral + n1Act + n1Wri + n2Oral + n2Act + n2Wri + thOral + thWri
+                        val level = if (tot >= 80) "மலர்" else if (tot >= 60) "மொட்டு" else "அரும்பு"
+                        val grade = if (tot >= 80) "A" else if (tot >= 60) "B" else "C"
+
+                        repository.saveMark(
+                            StudentMarks(
+                                studentId = studentId,
+                                term = term,
+                                subjectKey = Subject.EVS.key,
+                                naney1Oral = n1Oral,
+                                naney1Activity = n1Act,
+                                naney1Written = n1Wri,
+                                naney2Oral = n2Oral,
+                                naney2Activity = n2Act,
+                                naney2Written = n2Wri,
+                                thiranariOral = thOral,
+                                thiranariWritten = thWri,
+                                faA = n1Oral + n1Act + n1Wri,
+                                faB = n2Oral + n2Act + n2Wri,
+                                faTotal = (n1Oral + n1Act + n1Wri) + (n2Oral + n2Act + n2Wri),
+                                sa = thOral + thWri,
+                                total = tot,
+                                learningLevel = level,
+                                grade = grade
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 

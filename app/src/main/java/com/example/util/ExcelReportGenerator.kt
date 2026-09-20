@@ -313,7 +313,7 @@ object ExcelReportGenerator {
 
         val isPrimaryGroup = classRecordsMap.keys.all { it in 1..3 }
         val subjects = if (isPrimaryGroup) {
-            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS)
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.EVS)
         } else {
             listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.SCIENCE, Subject.SOCIAL)
         }

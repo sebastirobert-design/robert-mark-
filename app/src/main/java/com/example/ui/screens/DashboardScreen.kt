@@ -20,11 +20,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.School
@@ -97,41 +95,6 @@ fun DashboardScreen(
                 selectedClass = selectedClass,
                 onSelectClass = { viewModel.selectClass(it) }
             )
-        }
-
-        // Summary Quick Stats
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                StatCard(
-                    title = "வகுப்பு $selectedClass மாணவர்கள்",
-                    count = "${classStudents.size}",
-                    subtitle = "பதிவு செய்தவர்கள்",
-                    icon = Icons.Default.School,
-                    color = NavyPrimary,
-                    modifier = Modifier.weight(1f)
-                )
-
-                StatCard(
-                    title = "பருவங்கள்",
-                    count = "3",
-                    subtitle = "பருவம் 1, 2, 3",
-                    icon = Icons.Default.AssignmentTurnedIn,
-                    color = EmeraldPass,
-                    modifier = Modifier.weight(1f)
-                )
-
-                StatCard(
-                    title = "பாடங்கள்",
-                    count = if (selectedClass in 1..3) "3" else "5",
-                    subtitle = if (selectedClass in 1..3) "அரும்பு/மொட்டு" else "மொத்தம் 500",
-                    icon = Icons.Default.MenuBook,
-                    color = AmberGold,
-                    modifier = Modifier.weight(1f)
-                )
-            }
         }
 
         // Action Buttons Grid
@@ -339,60 +302,6 @@ fun DashboardScreen(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun StatCard(
-    title: String,
-    count: String,
-    subtitle: String,
-    icon: ImageVector,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = color.copy(alpha = 0.12f),
-                modifier = Modifier.size(26.dp)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.padding(5.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = count,
-                fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
-                color = NavyDark
-            )
-            Text(
-                text = title,
-                fontWeight = FontWeight.Medium,
-                fontSize = 10.5.sp,
-                color = Color.DarkGray,
-                maxLines = 1
-            )
-            Text(
-                text = subtitle,
-                fontSize = 9.sp,
-                color = Color.Gray,
-                maxLines = 1
-            )
         }
     }
 }

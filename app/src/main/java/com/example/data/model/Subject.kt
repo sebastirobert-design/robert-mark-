@@ -7,6 +7,7 @@ enum class Subject(val key: String, val tamilName: String, val shortName: String
     TAMIL("TAMIL", "தமிழ்", "தமிழ்"),
     ENGLISH("ENGLISH", "ஆங்கிலம்", "ஆங்கிலம்"),
     MATHS("MATHS", "கணிதம்", "கணக்கு"),
+    EVS("EVS", "சூழ்நிலையியல் (EVS)", "சூழ்நிலை"),
     SCIENCE("SCIENCE", "அறிவியல்", "அறிவியல்"),
     SOCIAL("SOCIAL", "சமூக அறிவியல்", "சமூகவியல்"),
     PE("PE", "உடற்கல்வி", "உ.கல்வி");
@@ -14,7 +15,7 @@ enum class Subject(val key: String, val tamilName: String, val shortName: String
     companion object {
         fun getSubjectsForClass(stdClass: Int): List<Subject> {
             return when (stdClass) {
-                1, 2, 3 -> listOf(TAMIL, ENGLISH, MATHS)
+                1, 2, 3 -> listOf(TAMIL, ENGLISH, MATHS, EVS)
                 4, 5, 6, 7 -> listOf(TAMIL, ENGLISH, MATHS, SCIENCE, SOCIAL)
                 8 -> listOf(TAMIL, ENGLISH, MATHS, SCIENCE, SOCIAL, PE)
                 else -> listOf(TAMIL, ENGLISH, MATHS, SCIENCE, SOCIAL)
@@ -22,12 +23,12 @@ enum class Subject(val key: String, val tamilName: String, val shortName: String
         }
 
         /**
-         * The 5 core academic subjects whose marks are included in the Grand Total (out of 500 or 300).
+         * The core academic subjects whose marks are included in the Grand Total (out of 500 or 400).
          * Physical Education (PE) is excluded from the Total as per school norms.
          */
         fun getMainSubjectsForClass(stdClass: Int): List<Subject> {
             return when (stdClass) {
-                1, 2, 3 -> listOf(TAMIL, ENGLISH, MATHS)
+                1, 2, 3 -> listOf(TAMIL, ENGLISH, MATHS, EVS)
                 else -> listOf(TAMIL, ENGLISH, MATHS, SCIENCE, SOCIAL)
             }
         }

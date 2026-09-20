@@ -2129,7 +2129,7 @@ object PdfReportGenerator {
         val sampleClass = classRecordsMap.keys.firstOrNull() ?: 1
         val isPrimaryGroup = classRecordsMap.keys.all { it in 1..3 }
         val subjects = if (isPrimaryGroup) {
-            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS)
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.EVS)
         } else {
             listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.SCIENCE, Subject.SOCIAL)
         }
@@ -2291,7 +2291,7 @@ object PdfReportGenerator {
             curX += subjectW
         }
 
-        val maxAcademicTotal = if (isPrimaryGroup) 300 else 500
+        val maxAcademicTotal = if (isPrimaryGroup) 400 else 500
         canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
         canvas.drawText("மொத்தம்", curX + 21f, tableTop + 12f, headerTextPaint)
         canvas.drawText("($maxAcademicTotal)", curX + 21f, tableTop + headerH1 + 10f, subTextPaint)
