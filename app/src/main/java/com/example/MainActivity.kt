@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.AppNavDestination
+import com.example.ui.dialogs.UserGuideDialog
 import com.example.ui.screens.CertificateScreen
 import com.example.ui.screens.ConsolidationScreen
 import com.example.ui.screens.DashboardScreen
@@ -71,6 +73,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainAppScreen(viewModel: SchoolMarksViewModel) {
     var currentDestination by remember { mutableStateOf(AppNavDestination.DASHBOARD) }
+    var showUserGuideDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val uiMessage by viewModel.uiMessage.collectAsState()
     val schoolProfile by viewModel.schoolProfile.collectAsState()
@@ -118,6 +121,16 @@ fun MainAppScreen(viewModel: SchoolMarksViewModel) {
                     }
                 },
                 actions = {
+                    IconButton(
+                        onClick = { showUserGuideDialog = true },
+                        modifier = Modifier.testTag("nav_user_guide_btn")
+                    ) {
+                        Icon(
+                            Icons.Default.HelpOutline,
+                            contentDescription = "பயனர் வழிகாட்டி",
+                            tint = Color.White
+                        )
+                    }
                     IconButton(
                         onClick = { currentDestination = AppNavDestination.SETTINGS },
                         modifier = Modifier.testTag("nav_settings_btn")
@@ -213,5 +226,9 @@ fun MainAppScreen(viewModel: SchoolMarksViewModel) {
                 modifier = Modifier.padding(innerPadding)
             )
         }
+    }
+
+    if (showUserGuideDialog) {
+        UserGuideDialog(onDismiss = { showUserGuideDialog = false })
     }
 }

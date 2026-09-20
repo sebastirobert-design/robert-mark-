@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.School
@@ -39,7 +40,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.AppNavDestination
 import com.example.ui.components.ClassChipsSelector
 import com.example.ui.components.SchoolBannerCard
+import com.example.ui.dialogs.UserGuideDialog
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.EmeraldPass
@@ -74,6 +79,7 @@ fun DashboardScreen(
     val schoolProfile by viewModel.schoolProfile.collectAsState()
     val selectedClass by viewModel.selectedClass.collectAsState()
     val allStudents by viewModel.allStudents.collectAsState()
+    var showUserGuideDialog by remember { mutableStateOf(false) }
 
     val classStudents = allStudents.filter { it.stdClass == selectedClass }
 
@@ -165,15 +171,30 @@ fun DashboardScreen(
         }
 
         item {
-            QuickActionCard(
-                title = "பெற்றோர் கூட்ட கடிதம் (அழைப்பிதழ்)",
-                subtitle = "PTA / SMC / மதிப்பெண் அறிக்கை - பெயர் குறிப்பிட்டு தானியங்கி PDF",
-                icon = Icons.Default.Email,
-                color = Color(0xFF0284C7),
-                onClick = { onNavigate(AppNavDestination.PARENT_LETTERS) },
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                testTag = "action_parent_letters"
-            )
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                QuickActionCard(
+                    title = "பெற்றோர் கடிதம்",
+                    subtitle = "PTA / SMC அழைப்பிதழ்",
+                    icon = Icons.Default.Email,
+                    color = Color(0xFF0284C7),
+                    onClick = { onNavigate(AppNavDestination.PARENT_LETTERS) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "action_parent_letters"
+                )
+
+                QuickActionCard(
+                    title = "பயனர் வழிகாட்டி",
+                    subtitle = "முழு கையேடு & விதிகள்",
+                    icon = Icons.Default.HelpOutline,
+                    color = Color(0xFF7C3AED),
+                    onClick = { showUserGuideDialog = true },
+                    modifier = Modifier.weight(1f),
+                    testTag = "action_user_guide"
+                )
+            }
         }
 
         // Export Actions Section
@@ -303,6 +324,10 @@ fun DashboardScreen(
                 }
             }
         }
+    }
+
+    if (showUserGuideDialog) {
+        UserGuideDialog(onDismiss = { showUserGuideDialog = false })
     }
 }
 

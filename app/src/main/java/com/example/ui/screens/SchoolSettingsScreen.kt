@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.dialogs.UserGuideDialog
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
@@ -86,6 +88,7 @@ fun SchoolSettingsScreen(
 
     var showApplyWorkingDaysDialog by remember { mutableStateOf(false) }
     var showRestoreConfirmDialog by remember { mutableStateOf(false) }
+    var showUserGuideDialog by remember { mutableStateOf(false) }
     var pendingRestoreJson by remember { mutableStateOf<String?>(null) }
     var lastExportedFile by remember { mutableStateOf<File?>(null) }
 
@@ -515,6 +518,62 @@ fun SchoolSettingsScreen(
                 }
             }
         }
+
+        // User Guide Card
+        item {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = Color(0xFF7C3AED).copy(alpha = 0.12f),
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.HelpOutline,
+                                contentDescription = null,
+                                tint = Color(0xFF7C3AED),
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "பயனர் வழிகாட்டி (User Guide)",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = NavyDark
+                            )
+                            Text(
+                                text = "செயலியின் அனைத்து விதிகள் மற்றும் பயன்பாட்டு கையேடு",
+                                fontSize = 11.5.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Button(
+                        onClick = { showUserGuideDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED)),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("settings_open_user_guide_btn")
+                    ) {
+                        Icon(Icons.Default.HelpOutline, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("பயனர் வழிகாட்டியை வாசிக்க (Open Guide)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
     }
 
     // Confirmation Dialog for Applying Working Days to All Students
@@ -609,5 +668,9 @@ fun SchoolSettingsScreen(
                 }
             }
         )
+    }
+
+    if (showUserGuideDialog) {
+        UserGuideDialog(onDismiss = { showUserGuideDialog = false })
     }
 }
