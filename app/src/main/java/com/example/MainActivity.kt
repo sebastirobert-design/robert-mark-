@@ -211,6 +211,7 @@ fun MainAppScreen(viewModel: SchoolMarksViewModel) {
             )
             AppNavDestination.CONSOLIDATION -> ConsolidationScreen(
                 viewModel = viewModel,
+                onNavigate = { currentDestination = it },
                 modifier = Modifier.padding(innerPadding)
             )
             AppNavDestination.CERTIFICATE -> CertificateScreen(

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PictureAsPdf
@@ -299,25 +300,37 @@ fun DashboardScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Groups, contentDescription = null, tint = NavyPrimary, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "முப்பருவப் பிரிவுகள் (CCE வழிகாட்டுதல்):",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.5.sp,
+                            color = NavyDark
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "பள்ளி கல்வித்துறை CCE வழிகாட்டுதல்:",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.5.sp,
-                        color = NavyDark
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "• வகுப்பு 1 முதல் 3: தமிழ், ஆங்கிலம், கணிதம் (FA(a)-20 + FA(b)-20 + SA-60 = 100).",
+                        text = "1. வகுப்பு 1 - 3 (தொடக்கப் பிரிவு): தமிழ், ஆங்கிலம், கணிதம் (FA(a)-20 + FA(b)-20 + SA-60 = 100, மொத்தம் 300 மதிப்பெண்கள்).",
                         fontSize = 11.5.sp,
                         color = Color.DarkGray
                     )
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = "• வகுப்பு 4 முதல் 7: தமிழ், ஆங்கிலம், கணக்கு, அறிவியல், சமூக அறிவியல் (FA-40 + SA-60 = 100).",
+                        text = "2. வகுப்பு 4 - 5 (தொடக்க மேல்நிலைப் பிரிவு): தமிழ், ஆங்கிலம், கணக்கு, அறிவியல், சமூக அறிவியல் (மொத்தம் 500 மதிப்பெண்கள்).",
                         fontSize = 11.5.sp,
                         color = Color.DarkGray
                     )
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = "• எட்டாம் வகுப்பு: 5 பிரதான பாடங்கள் (100 வீதம் 500 மதிப்பெண்), முப்பருவ சராசரி பதிவேடு, பள்ளி வேலை நாட்கள் & மாணவர் வருகை நாட்கள் பதிவு, ஆண்டின் முடிவில் மதிப்பெண் சான்றிதழ்.",
+                        text = "3. வகுப்பு 6 - 7 (நடுநிலைப் பிரிவு): தமிழ், ஆங்கிலம், கணக்கு, அறிவியல், சமூக அறிவியல் (மொத்தம் 500 மதிப்பெண்கள்).",
+                        fontSize = 11.5.sp,
+                        color = Color.DarkGray
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = "4. வகுப்பு 8 (சான்றிதழ் பிரிவு): 5 முதன்மைப் பாடங்கள் (மொத்தம் 500 மதிப்பெண்கள்) + உடற்கல்வி தனிக் கணக்கீடு & தரம் (A/B/C/D) மற்றும் ஆண்டு இறுதி சான்றிதழ்.",
                         fontSize = 11.5.sp,
                         color = Color.DarkGray
                     )

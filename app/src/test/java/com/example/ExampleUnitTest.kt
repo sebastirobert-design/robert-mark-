@@ -47,6 +47,41 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testFourAcademicSectionsSubjectsAndTotals() {
+        // Section 1: Class 1-3 (Primary): Tamil, English, Maths (300 marks)
+        for (cls in 1..3) {
+            val subjects = com.example.data.model.Subject.getSubjectsForClass(cls)
+            assertEquals(3, subjects.size)
+            assertTrue(subjects.contains(com.example.data.model.Subject.TAMIL))
+            assertTrue(subjects.contains(com.example.data.model.Subject.ENGLISH))
+            assertTrue(subjects.contains(com.example.data.model.Subject.MATHS))
+            assertFalse(subjects.contains(com.example.data.model.Subject.SCIENCE))
+            assertFalse(subjects.contains(com.example.data.model.Subject.PE))
+        }
+
+        // Section 2: Class 4-5 (Upper Primary): 5 subjects (500 marks)
+        for (cls in 4..5) {
+            val subjects = com.example.data.model.Subject.getSubjectsForClass(cls)
+            assertEquals(5, subjects.size)
+            assertFalse(subjects.contains(com.example.data.model.Subject.PE))
+        }
+
+        // Section 3: Class 6-7 (Middle): 5 subjects (500 marks)
+        for (cls in 6..7) {
+            val subjects = com.example.data.model.Subject.getSubjectsForClass(cls)
+            assertEquals(5, subjects.size)
+            assertFalse(subjects.contains(com.example.data.model.Subject.PE))
+        }
+
+        // Section 4: Class 8 (Certificate): 5 main subjects + PE isolated
+        val class8Main = com.example.data.model.Subject.getMainSubjectsForClass(8)
+        assertEquals(5, class8Main.size)
+        val class8All = com.example.data.model.Subject.getSubjectsForClass(8)
+        assertEquals(6, class8All.size)
+        assertTrue(class8All.contains(com.example.data.model.Subject.PE))
+    }
+
+    @Test
     fun testParentLetterPlaceholderReplacement() {
         val template = "வணக்கம் {parent_name}, மாணவர் {student_name} (வகுப்பு: {class_section}) கூட்டம் {date} அன்று {place} நடைபெறும்."
         val filled = template

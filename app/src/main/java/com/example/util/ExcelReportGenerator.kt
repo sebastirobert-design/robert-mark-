@@ -312,8 +312,9 @@ object ExcelReportGenerator {
         val file = File(reportsDir, fileName)
 
         val isPrimaryGroup = classRecordsMap.keys.all { it in 1..3 }
+        val isClass8Group = classRecordsMap.keys.all { it == 8 }
         val subjects = if (isPrimaryGroup) {
-            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.EVS)
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS)
         } else {
             listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.SCIENCE, Subject.SOCIAL)
         }
@@ -335,14 +336,22 @@ object ExcelReportGenerator {
                 for (sub in subjects) {
                     row1.append(",\"${sub.tamilName}\",\"\",\"\"")
                 }
-                row1.append(",\"மொத்தம் ($maxTotal)\",\"பள்ளி நாட்கள்\",\"வருகை\",\"சராசரி %\"")
+                row1.append(",\"மொத்தம் ($maxTotal)\"")
+                if (isClass8Group) {
+                    row1.append(",\"உடற்கல்வி (தனி)\",\"\",\"\"")
+                }
+                row1.append(",\"பள்ளி நாட்கள்\",\"வருகை\",\"சராசரி %\"")
                 writer.appendLine(row1.toString())
 
                 val row2 = StringBuilder("\"\",\"\",\"\",\"\",\"\"")
                 for (sub in subjects) {
                     row2.append(",\"SA\",\"FA\",\"மொ\"")
                 }
-                row2.append(",\"\",\"\",\"\",\"\"")
+                row2.append(",\"\"")
+                if (isClass8Group) {
+                    row2.append(",\"SA\",\"FA\",\"மொ\"")
+                }
+                row2.append(",\"\",\"\",\"\"")
                 writer.appendLine(row2.toString())
 
                 var sNoCounter = 1
@@ -387,6 +396,24 @@ object ExcelReportGenerator {
                                     tm?.total ?: 0
                                 }
                             }
+                            row.append(",\"$totalMark\"")
+
+                            if (isClass8Group) {
+                                val peSm = record.subjectMarks[Subject.PE]
+                                val (peSa, peFa, peTot) = if (term == 0) {
+                                    Triple(peSm?.avgSa ?: 0, peSm?.avgFa ?: 0, peSm?.avgTotal ?: 0)
+                                } else {
+                                    val tm = when (term) {
+                                        1 -> peSm?.term1Marks
+                                        2 -> peSm?.term2Marks
+                                        3 -> peSm?.term3Marks
+                                        else -> null
+                                    }
+                                    Triple(tm?.sa ?: 0, tm?.faTotal ?: 0, tm?.total ?: 0)
+                                }
+                                row.append(",\"$peSa\",\"$peFa\",\"$peTot\"")
+                            }
+
                             val att = when (term) {
                                 1 -> record.term1Attendance
                                 2 -> record.term2Attendance
@@ -400,7 +427,7 @@ object ExcelReportGenerator {
                             }
                             val pct = if (maxTotal > 0) String.format("%.1f%%", (totalMark.toDouble() / maxTotal) * 100) else "0.0%"
 
-                            row.append(",\"$totalMark\",\"$wDays\",\"$pDays\",\"$pct\"")
+                            row.append(",\"$wDays\",\"$pDays\",\"$pct\"")
                             writer.appendLine(row.toString())
                         }
                     }
