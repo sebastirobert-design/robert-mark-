@@ -377,9 +377,12 @@ fun StudentMarkForm(
     val subjects = Subject.getSubjectsForClass(student.stdClass)
     val isPrimary = student.stdClass in 1..3
 
-    // Working Days & Present Days state
-    var workingDaysStr by remember(student.id, term) { mutableStateOf("80") }
-    var presentDaysStr by remember(student.id, term) { mutableStateOf("76") }
+    val schoolProfile by viewModel.schoolProfile.collectAsState()
+    val defaultWorkingDays = schoolProfile.getWorkingDaysForTerm(term)
+
+    // Working Days & Present Days state initialized from School Profile settings
+    var workingDaysStr by remember(student.id, term, defaultWorkingDays) { mutableStateOf(defaultWorkingDays.toString()) }
+    var presentDaysStr by remember(student.id, term, defaultWorkingDays) { mutableStateOf(((defaultWorkingDays * 0.95).toInt()).toString()) }
 
     // Marks state map
     val marksState = remember(student.id, term) {
@@ -435,6 +438,9 @@ fun StudentMarkForm(
         if (att != null) {
             workingDaysStr = att.totalWorkingDays.toString()
             presentDaysStr = att.presentDays.toString()
+        } else {
+            workingDaysStr = defaultWorkingDays.toString()
+            presentDaysStr = ((defaultWorkingDays * 0.95).toInt()).toString()
         }
     }
 
@@ -559,14 +565,22 @@ fun StudentMarkForm(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        OutlinedTextField(
-                            value = workingDaysStr,
-                            onValueChange = { workingDaysStr = it },
-                            label = { Text("பள்ளி வேலை நாட்கள்") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            OutlinedTextField(
+                                value = workingDaysStr,
+                                onValueChange = { workingDaysStr = it },
+                                label = { Text("பள்ளி வேலை நாட்கள்") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Text(
+                                text = "பள்ளி அமைப்பில்: ${schoolProfile.getWorkingDaysForTerm(term)} நாட்கள்",
+                                fontSize = 10.5.sp,
+                                color = NavyPrimary,
+                                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                            )
+                        }
 
                         OutlinedTextField(
                             value = presentDaysStr,

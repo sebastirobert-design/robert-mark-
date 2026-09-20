@@ -3,4 +3,6 @@
     <cache-path name="cache_reports" path="reports/" />
     <cache-path name="cache_files" path="." />
     <files-path name="files_reports" path="reports/" />
+    <files-path name="files_all" path="." />
+    <external-files-path name="external_files" path="." />
 </paths>

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PictureAsPdf
@@ -198,6 +199,18 @@ fun DashboardScreen(
                     testTag = "action_certificate"
                 )
             }
+        }
+
+        item {
+            QuickActionCard(
+                title = "பெற்றோர் கூட்ட கடிதம் (அழைப்பிதழ்)",
+                subtitle = "PTA / SMC / மதிப்பெண் அறிக்கை - பெயர் குறிப்பிட்டு தானியங்கி PDF",
+                icon = Icons.Default.Email,
+                color = Color(0xFF0284C7),
+                onClick = { onNavigate(AppNavDestination.PARENT_LETTERS) },
+                modifier = Modifier.fillMaxWidth(),
+                testTag = "action_parent_letters"
+            )
         }
 
         // Export Actions Section

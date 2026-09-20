@@ -14,6 +14,7 @@ import com.example.data.model.Subject
 import com.example.data.model.SubjectThreeTermMarks
 import com.example.data.model.TermAttendance
 import com.example.data.repository.SchoolRepository
+import com.example.util.BackupRestoreManager
 import com.example.util.CsvStudentImporter
 import com.example.util.ExcelReportGenerator
 import com.example.util.PdfReportGenerator
@@ -141,23 +142,44 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
 
     fun updateSchoolProfile(
         schoolName: String,
+        udiseCode: String = "33230500103",
         unionName: String,
         districtName: String,
         academicYear: String,
-        headmasterName: String
+        headmasterName: String,
+        term1WorkingDays: Int = 80,
+        term2WorkingDays: Int = 80,
+        term3WorkingDays: Int = 60
     ) {
         viewModelScope.launch {
             repository.updateSchoolProfile(
                 SchoolProfile(
                     id = 1,
                     schoolName = schoolName.trim(),
+                    udiseCode = udiseCode.trim(),
                     unionName = unionName.trim(),
                     districtName = districtName.trim(),
                     academicYear = academicYear.trim(),
-                    headmasterName = headmasterName.trim()
+                    headmasterName = headmasterName.trim(),
+                    term1WorkingDays = term1WorkingDays,
+                    term2WorkingDays = term2WorkingDays,
+                    term3WorkingDays = term3WorkingDays
                 )
             )
             uiMessage.value = "பள்ளி விவரங்கள் சேமிக்கப்பட்டன"
+        }
+    }
+
+    fun applyWorkingDaysToAllStudents(
+        term1Days: Int,
+        term2Days: Int,
+        term3Days: Int,
+        onComplete: () -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            repository.applyWorkingDaysToAllStudents(term1Days, term2Days, term3Days)
+            uiMessage.value = "அனைத்து மாணவர்களுக்கும் பள்ளி வேலை நாட்கள் ($term1Days, $term2Days, $term3Days) வெற்றிகரமாக பொருத்தப்பட்டன!"
+            onComplete()
         }
     }
 
@@ -502,6 +524,75 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun exportCombinedGroupPdf(
+        context: Context,
+        groupTitle: String,
+        classes: List<Int>,
+        term: Int = 0,
+        onComplete: (File) -> Unit
+    ) {
+        viewModelScope.launch {
+            val map = classes.associateWith { cls ->
+                loadConsolidatedRecordsForClass(cls)
+            }
+            val file = PdfReportGenerator.generateCombinedGroupPdf(
+                context = context,
+                school = schoolProfile.value,
+                groupTitle = groupTitle,
+                classRecordsMap = map,
+                term = term
+            )
+            onComplete(file)
+        }
+    }
+
+    fun exportCombinedGroupExcel(
+        context: Context,
+        groupTitle: String,
+        classes: List<Int>,
+        term: Int = 0,
+        onComplete: (File) -> Unit
+    ) {
+        viewModelScope.launch {
+            val map = classes.associateWith { cls ->
+                loadConsolidatedRecordsForClass(cls)
+            }
+            val file = ExcelReportGenerator.generateCombinedGroupCsv(
+                context = context,
+                school = schoolProfile.value,
+                groupTitle = groupTitle,
+                classRecordsMap = map,
+                term = term
+            )
+            onComplete(file)
+        }
+    }
+
+    fun exportParentLettersPdf(
+        context: Context,
+        students: List<Student>,
+        letterTitle: String,
+        letterBody: String,
+        meetingDate: String,
+        meetingPlace: String,
+        twoPerSheet: Boolean = true,
+        onComplete: (File) -> Unit
+    ) {
+        viewModelScope.launch {
+            val file = PdfReportGenerator.generateParentLettersPdf(
+                context = context,
+                school = schoolProfile.value,
+                students = students,
+                letterTitle = letterTitle,
+                letterBody = letterBody,
+                meetingDate = meetingDate,
+                meetingPlace = meetingPlace,
+                twoPerSheet = twoPerSheet
+            )
+            onComplete(file)
+        }
+    }
+
     fun exportClass1To3SubjectPdf(
         context: Context,
         stdClass: Int,
@@ -615,6 +706,40 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
 
             uiMessage.value = "மாணவர் வகுப்பு உயர்வு வெற்றிகரமாக நிறைவடைந்தது! ($count மாணவர்கள் உயர்த்தப்பட்டனர்)"
             onComplete(count)
+        }
+    }
+
+    suspend fun loadConsolidatedRecordsForClassGroup(classes: List<Int>): Map<Int, List<StudentConsolidatedRecord>> {
+        val result = mutableMapOf<Int, List<StudentConsolidatedRecord>>()
+        for (c in classes) {
+            result[c] = loadConsolidatedRecordsForClass(c)
+        }
+        return result
+    }
+
+    fun exportFullBackup(context: Context, onComplete: (File?, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val (file, summary) = BackupRestoreManager.exportBackup(context, repository)
+                uiMessage.value = "முழு காப்புநகல் எடுக்கப்பட்டது!"
+                onComplete(file, summary)
+            } catch (e: Exception) {
+                uiMessage.value = "காப்புநகல் பிழை: ${e.localizedMessage}"
+                onComplete(null, e.localizedMessage ?: "காப்புநகல் தோல்வியடைந்தது")
+            }
+        }
+    }
+
+    fun restoreFullBackup(context: Context, jsonString: String, onComplete: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            val result = BackupRestoreManager.restoreFromJson(jsonString, repository)
+            result.onSuccess { msg ->
+                uiMessage.value = "காப்புநகல் மீட்டமைக்கப்பட்டது!"
+                onComplete(true, msg)
+            }.onFailure { err ->
+                uiMessage.value = "மீட்டமைத்தல் தோல்வி: ${err.localizedMessage}"
+                onComplete(false, err.localizedMessage ?: "மீட்டமைத்தல் பிழை")
+            }
         }
     }
 }

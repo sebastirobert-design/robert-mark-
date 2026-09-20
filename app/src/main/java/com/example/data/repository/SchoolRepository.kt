@@ -115,4 +115,38 @@ class SchoolRepository(private val database: AppDatabase) {
     suspend fun saveAttendanceList(list: List<TermAttendance>) {
         attendanceDao.insertOrUpdateAttendanceList(list)
     }
+
+    suspend fun getAllStudentsOnce(): List<Student> = studentDao.getAllStudentsOnce()
+    suspend fun getAllMarksOnce(): List<StudentMarks> = marksDao.getAllMarksOnce()
+    suspend fun getAllAttendanceOnce(): List<TermAttendance> = attendanceDao.getAllAttendanceOnce()
+
+    suspend fun applyWorkingDaysToAllStudents(term1Days: Int, term2Days: Int, term3Days: Int) {
+        val students = studentDao.getAllStudentsOnce()
+        val allAtt = attendanceDao.getAllAttendanceOnce()
+        val attMap = allAtt.groupBy { it.studentId }
+        val updatedList = mutableListOf<TermAttendance>()
+
+        for (st in students) {
+            val studentAtts = attMap[st.id] ?: emptyList()
+            for (t in 1..3) {
+                val targetDays = when (t) {
+                    1 -> term1Days
+                    2 -> term2Days
+                    3 -> term3Days
+                    else -> term1Days
+                }
+                val existing = studentAtts.find { it.term == t }
+                if (existing != null) {
+                    val newPresent = existing.presentDays.coerceAtMost(targetDays)
+                    updatedList.add(existing.copy(totalWorkingDays = targetDays, presentDays = newPresent))
+                } else {
+                    val defaultPresent = (targetDays * 0.95).toInt().coerceAtMost(targetDays)
+                    updatedList.add(TermAttendance(studentId = st.id, term = t, totalWorkingDays = targetDays, presentDays = defaultPresent))
+                }
+            }
+        }
+        if (updatedList.isNotEmpty()) {
+            attendanceDao.insertOrUpdateAttendanceList(updatedList)
+        }
+    }
 }

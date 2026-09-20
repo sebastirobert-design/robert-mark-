@@ -13,6 +13,9 @@ interface MarksDao {
     @Query("SELECT * FROM student_marks WHERE studentId = :studentId")
     fun getMarksForStudent(studentId: Long): Flow<List<StudentMarks>>
 
+    @Query("SELECT * FROM student_marks")
+    suspend fun getAllMarksOnce(): List<StudentMarks>
+
     @Query("SELECT * FROM student_marks WHERE studentId = :studentId AND term = :term")
     fun getMarksForStudentAndTerm(studentId: Long, term: Int): Flow<List<StudentMarks>>
 

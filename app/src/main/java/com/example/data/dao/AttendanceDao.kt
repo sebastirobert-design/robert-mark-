@@ -12,6 +12,9 @@ interface AttendanceDao {
     @Query("SELECT * FROM term_attendance WHERE studentId = :studentId")
     fun getAttendanceForStudent(studentId: Long): Flow<List<TermAttendance>>
 
+    @Query("SELECT * FROM term_attendance")
+    suspend fun getAllAttendanceOnce(): List<TermAttendance>
+
     @Query("SELECT * FROM term_attendance WHERE studentId = :studentId AND term = :term LIMIT 1")
     fun getAttendanceForStudentAndTerm(studentId: Long, term: Int): Flow<TermAttendance?>
 

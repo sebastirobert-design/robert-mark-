@@ -14,6 +14,9 @@ interface StudentDao {
     @Query("SELECT * FROM students ORDER BY stdClass ASC, id ASC")
     fun getAllStudents(): Flow<List<Student>>
 
+    @Query("SELECT * FROM students ORDER BY id ASC")
+    suspend fun getAllStudentsOnce(): List<Student>
+
     @Query("SELECT * FROM students WHERE stdClass = :stdClass ORDER BY id ASC")
     fun getStudentsByClass(stdClass: Int): Flow<List<Student>>
 

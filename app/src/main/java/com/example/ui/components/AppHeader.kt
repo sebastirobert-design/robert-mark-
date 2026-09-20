@@ -75,7 +75,11 @@ fun SchoolBannerCard(
                         )
                     )
                     Text(
-                        text = "${schoolProfile.unionName} • ${schoolProfile.districtName}",
+                        text = if (schoolProfile.udiseCode.isNotBlank()) {
+                            "${schoolProfile.unionName} • ${schoolProfile.districtName} • UDISE: ${schoolProfile.udiseCode}"
+                        } else {
+                            "${schoolProfile.unionName} • ${schoolProfile.districtName}"
+                        },
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 11.sp

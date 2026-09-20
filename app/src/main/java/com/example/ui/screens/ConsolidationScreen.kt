@@ -79,6 +79,8 @@ fun ConsolidationScreen(
     val selectedClass by viewModel.selectedClass.collectAsState()
     val allStudents by viewModel.allStudents.collectAsState()
 
+    var groupMode by remember { mutableIntStateOf(0) } // 0: தனி வகுப்பு, 1: வகுப்பு 1-3, 2: வகுப்பு 4-5, 3: வகுப்பு 6-7, 4: வகுப்பு 8
+    var groupRecordsMap by remember { mutableStateOf<Map<Int, List<StudentConsolidatedRecord>>>(emptyMap()) }
     var records by remember { mutableStateOf<List<StudentConsolidatedRecord>>(emptyList()) }
     var viewModeTab by remember { mutableIntStateOf(0) } // 0: முப்பருவ சராசரி, 1: பருவம் 1, 2: பருவம் 2, 3: பருவம் 3
     var selectedPrimarySubject by remember(selectedClass, viewModeTab) { mutableStateOf<Subject?>(null) }
@@ -87,25 +89,193 @@ fun ConsolidationScreen(
     var showRankCardDialog by remember { mutableStateOf(false) }
     var selectedRankCardRecord by remember { mutableStateOf<StudentConsolidatedRecord?>(null) }
 
-    // Refresh records when class or students change
-    LaunchedEffect(selectedClass, allStudents) {
-        records = viewModel.loadConsolidatedRecordsForClass(selectedClass)
+    // Refresh records when class, students, or groupMode change
+    LaunchedEffect(selectedClass, allStudents, groupMode) {
+        if (groupMode == 1) {
+            val map = mutableMapOf<Int, List<StudentConsolidatedRecord>>()
+            for (c in 1..3) {
+                map[c] = viewModel.loadConsolidatedRecordsForClass(c)
+            }
+            groupRecordsMap = map
+            records = map.values.flatten()
+        } else if (groupMode == 2) {
+            val map = mutableMapOf<Int, List<StudentConsolidatedRecord>>()
+            for (c in 4..5) {
+                map[c] = viewModel.loadConsolidatedRecordsForClass(c)
+            }
+            groupRecordsMap = map
+            records = map.values.flatten()
+        } else if (groupMode == 3) {
+            val map = mutableMapOf<Int, List<StudentConsolidatedRecord>>()
+            for (c in 6..7) {
+                map[c] = viewModel.loadConsolidatedRecordsForClass(c)
+            }
+            groupRecordsMap = map
+            records = map.values.flatten()
+        } else if (groupMode == 4) {
+            viewModel.selectClass(8)
+            records = viewModel.loadConsolidatedRecordsForClass(8)
+            groupRecordsMap = mapOf(8 to records)
+        } else {
+            records = viewModel.loadConsolidatedRecordsForClass(selectedClass)
+            groupRecordsMap = mapOf(selectedClass to records)
+        }
     }
 
-    val subjects = Subject.getSubjectsForClass(selectedClass)
-    val isPrimary = selectedClass in 1..3
+    val subjects = when (groupMode) {
+        1 -> listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS)
+        2, 3 -> listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.SCIENCE, Subject.SOCIAL)
+        4 -> Subject.getSubjectsForClass(8)
+        else -> Subject.getSubjectsForClass(selectedClass)
+    }
+    val isPrimary = if (groupMode in 1..3) groupMode == 1 else (if (groupMode == 4) false else selectedClass in 1..3)
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .testTag("consolidation_screen")
     ) {
-        // Class Selector
-        ClassChipsSelector(
-            selectedClass = selectedClass,
-            onSelectClass = { viewModel.selectClass(it) },
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-        )
+        // Class Group Selection Mode (காகிதம் சிக்கனம் / வகுப்பு குழுக்கள்)
+        Surface(
+            color = Color(0xFFF8FAFC),
+            border = BorderStroke(0.5.dp, Color(0xFFE2E8F0)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "வகுப்பு தேர்வு:",
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NavyDark
+                )
+
+                FilterChip(
+                    selected = groupMode == 0,
+                    onClick = { groupMode = 0 },
+                    label = { Text("தனி வகுப்பு (1-8)", fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = NavyPrimary,
+                        selectedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
+                )
+
+                FilterChip(
+                    selected = groupMode == 1,
+                    onClick = { groupMode = 1 },
+                    label = { Text("வகுப்பு 1 - 3", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF047857),
+                        selectedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
+                )
+
+                FilterChip(
+                    selected = groupMode == 2,
+                    onClick = { groupMode = 2 },
+                    label = { Text("வகுப்பு 4 - 5", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF2563EB),
+                        selectedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
+                )
+
+                FilterChip(
+                    selected = groupMode == 3,
+                    onClick = { groupMode = 3 },
+                    label = { Text("வகுப்பு 6 - 7", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF7C3AED),
+                        selectedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
+                )
+
+                FilterChip(
+                    selected = groupMode == 4,
+                    onClick = {
+                        groupMode = 4
+                        viewModel.selectClass(8)
+                    },
+                    label = { Text("வகுப்பு 8 (சான்றிதழ்)", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFFB45309),
+                        selectedLabelColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(6.dp)
+                )
+            }
+        }
+
+        // Individual Class Selector if in individual mode
+        if (groupMode == 0) {
+            ClassChipsSelector(
+                selectedClass = selectedClass,
+                onSelectClass = { viewModel.selectClass(it) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        } else if (groupMode == 1) {
+            Surface(
+                color = Color(0xFFECFDF5),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "🌱 வகுப்பு 1, 2, 3 ஒருங்கிணைந்த பட்டியல் (தமிழ், ஆங்கிலம், கணிதம் • மொத்தம்: 300) — காகித சிக்கனம்",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF065F46),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                )
+            }
+        } else if (groupMode == 2) {
+            Surface(
+                color = Color(0xFFEFF6FF),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "📘 வகுப்பு 4, 5 ஒருங்கிணைந்த பட்டியல் (5 பாடங்கள் • மொத்தம்: 500) — காகித சிக்கனம்",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1E40AF),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                )
+            }
+        } else if (groupMode == 3) {
+            Surface(
+                color = Color(0xFFF5F3FF),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "📙 வகுப்பு 6, 7 ஒருங்கிணைந்த பட்டியல் (5 பாடங்கள் • மொத்தம்: 500) — காகித சிக்கனம்",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF5B21B6),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                )
+            }
+        } else if (groupMode == 4) {
+            Surface(
+                color = Color(0xFFFFFBEB),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "🎓 எட்டாம் வகுப்பு (முப்பருவ சராசரி • உடற்கல்வி தனியாகக் கணக்கீடு • ஆண்டு இறுதி சான்றிதழ்)",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF92400E),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                )
+            }
+        }
 
         // View Mode Tabs
         val tabs = listOf("முப்பருவ சராசரி", "பருவம் 1", "பருவம் 2", "பருவம் 3")
@@ -186,48 +356,81 @@ fun ConsolidationScreen(
             color = Color(0xFFF1F5F9),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
-                Column {
-                    Text(
-                        text = if (selectedPrimarySubject != null) {
+                Text(
+                    text = when (groupMode) {
+                        1 -> "வகுப்பு 1 - 3 ஒருங்கிணைந்த ${tabs[viewModeTab]} பட்டியல்"
+                        2 -> "வகுப்பு 4 - 5 ஒருங்கிணைந்த ${tabs[viewModeTab]} பட்டியல்"
+                        3 -> "வகுப்பு 6 - 7 ஒருங்கிணைந்த ${tabs[viewModeTab]} பட்டியல்"
+                        4 -> "வகுப்பு 8 ${tabs[viewModeTab]} பட்டியல்"
+                        else -> if (selectedPrimarySubject != null) {
                             "${selectedPrimarySubject!!.tamilName} - ${tabs[viewModeTab]} பதிவேடு"
                         } else if (viewModeTab == 0) {
                             "முப்பருவ சராசரி பட்டியல்"
                         } else {
                             "${tabs[viewModeTab]} பட்டியல்"
-                        },
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = NavyDark
-                    )
-                    Text(
-                        text = "வகுப்பு: $selectedClass • ${records.size} மாணவர்கள்",
-                        fontSize = 11.5.sp,
-                        color = Color.Gray
-                    )
-                }
+                        }
+                    },
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = NavyDark
+                )
+                Text(
+                    text = when (groupMode) {
+                        1 -> "வகுப்பு 1-3 மொத்தம்: ${records.size} மாணவர்கள் • காகித சிக்கன முறை"
+                        2 -> "வகுப்பு 4-5 மொத்தம்: ${records.size} மாணவர்கள் • காகித சிக்கன முறை"
+                        3 -> "வகுப்பு 6-7 மொத்தம்: ${records.size} மாணவர்கள் • காகித சிக்கன முறை"
+                        4 -> "வகுப்பு 8 மொத்தம்: ${records.size} மாணவர்கள் • சான்றிதழ் பிரிவு"
+                        else -> "வகுப்பு: $selectedClass • ${records.size} மாணவர்கள்"
+                    },
+                    fontSize = 11.5.sp,
+                    color = Color.Gray
+                )
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Landscape orientation button row with compact button heights
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Small / Landscape green Excel button
                     Button(
                         onClick = {
-                            if (selectedPrimarySubject != null) {
+                            if (groupMode == 1) {
+                                viewModel.exportCombinedGroupExcel(context, "வகுப்பு 1 - 3 (தொடக்கப் பிரிவு)", listOf(1, 2, 3), viewModeTab) { file ->
+                                    Toast.makeText(context, "வகுப்பு 1-3 Excel தயார்", Toast.LENGTH_SHORT).show()
+                                    ExcelReportGenerator.shareCsvFile(context, file, "${schoolProfile.schoolName} வகுப்பு 1-3 ஒருங்கிணைந்த Excel")
+                                }
+                            } else if (groupMode == 2) {
+                                viewModel.exportCombinedGroupExcel(context, "வகுப்பு 4 - 5", listOf(4, 5), viewModeTab) { file ->
+                                    Toast.makeText(context, "வகுப்பு 4-5 Excel தயார்", Toast.LENGTH_SHORT).show()
+                                    ExcelReportGenerator.shareCsvFile(context, file, "${schoolProfile.schoolName} வகுப்பு 4-5 ஒருங்கிணைந்த Excel")
+                                }
+                            } else if (groupMode == 3) {
+                                viewModel.exportCombinedGroupExcel(context, "வகுப்பு 6 - 7", listOf(6, 7), viewModeTab) { file ->
+                                    Toast.makeText(context, "வகுப்பு 6-7 Excel தயார்", Toast.LENGTH_SHORT).show()
+                                    ExcelReportGenerator.shareCsvFile(context, file, "${schoolProfile.schoolName} வகுப்பு 6-7 ஒருங்கிணைந்த Excel")
+                                }
+                            } else if (selectedPrimarySubject != null) {
                                 viewModel.exportClass1To3SubjectCsv(context, selectedClass, viewModeTab, selectedPrimarySubject!!) { file ->
                                     Toast.makeText(context, "Excel CSV பதிவிறக்கம் தயார்", Toast.LENGTH_SHORT).show()
                                     ExcelReportGenerator.shareCsvFile(context, file, "${selectedPrimarySubject!!.tamilName} பதிவேடு")
                                 }
                             } else if (viewModeTab == 0) {
-                                viewModel.exportConsolidatedExcel(context, selectedClass) { file ->
+                                val targetClass = if (groupMode == 4) 8 else selectedClass
+                                viewModel.exportConsolidatedExcel(context, targetClass) { file ->
                                     Toast.makeText(context, "Excel CSV பதிவிறக்கம் தயார்", Toast.LENGTH_SHORT).show()
                                     ExcelReportGenerator.shareCsvFile(context, file, "${schoolProfile.schoolName} முப்பருவ சராசரி")
                                 }
                             } else {
-                                viewModel.exportTermExcel(context, selectedClass, viewModeTab) { file ->
+                                val targetClass = if (groupMode == 4) 8 else selectedClass
+                                viewModel.exportTermExcel(context, targetClass, viewModeTab) { file ->
                                     Toast.makeText(context, "Excel CSV பதிவிறக்கம் தயார்", Toast.LENGTH_SHORT).show()
                                     ExcelReportGenerator.shareCsvFile(context, file, "${schoolProfile.schoolName} பருவம் $viewModeTab")
                                 }
@@ -235,22 +438,43 @@ fun ConsolidationScreen(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = EmeraldPass),
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.testTag("consolidation_excel_btn")
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(38.dp)
+                            .testTag("consolidation_excel_btn")
                     ) {
-                        Icon(Icons.Default.TableChart, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.TableChart, contentDescription = null, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Excel", fontSize = 12.sp)
+                        Text("Excel பதிவிறக்கம்", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                     }
 
+                    // PDF Button
                     Button(
                         onClick = {
-                            if (selectedPrimarySubject != null) {
+                            if (groupMode == 1) {
+                                viewModel.exportCombinedGroupPdf(context, "வகுப்பு 1 - 3 (தொடக்கப் பிரிவு)", listOf(1, 2, 3), viewModeTab) { file ->
+                                    Toast.makeText(context, "வகுப்பு 1-3 ஒருங்கிணைந்த PDF தயார்", Toast.LENGTH_SHORT).show()
+                                    PdfReportGenerator.sharePdfFile(context, file, "${schoolProfile.schoolName} வகுப்பு 1-3 ஒருங்கிணைந்த பதிவேடு")
+                                }
+                            } else if (groupMode == 2) {
+                                viewModel.exportCombinedGroupPdf(context, "வகுப்பு 4 - 5", listOf(4, 5), viewModeTab) { file ->
+                                    Toast.makeText(context, "வகுப்பு 4-5 ஒருங்கிணைந்த PDF தயார்", Toast.LENGTH_SHORT).show()
+                                    PdfReportGenerator.sharePdfFile(context, file, "${schoolProfile.schoolName} வகுப்பு 4-5 ஒருங்கிணைந்த பதிவேடு")
+                                }
+                            } else if (groupMode == 3) {
+                                viewModel.exportCombinedGroupPdf(context, "வகுப்பு 6 - 7", listOf(6, 7), viewModeTab) { file ->
+                                    Toast.makeText(context, "வகுப்பு 6-7 ஒருங்கிணைந்த PDF தயார்", Toast.LENGTH_SHORT).show()
+                                    PdfReportGenerator.sharePdfFile(context, file, "${schoolProfile.schoolName} வகுப்பு 6-7 ஒருங்கிணைந்த பதிவேடு")
+                                }
+                            } else if (selectedPrimarySubject != null) {
                                 viewModel.exportClass1To3SubjectPdf(context, selectedClass, viewModeTab, selectedPrimarySubject!!) { file ->
                                     Toast.makeText(context, "PDF அறிக்கை தயார்", Toast.LENGTH_SHORT).show()
                                     PdfReportGenerator.sharePdfFile(context, file, "${selectedPrimarySubject!!.tamilName} பதிவேடு PDF")
                                 }
                             } else {
-                                viewModel.exportConsolidatedPdf(context, selectedClass) { file ->
+                                val targetClass = if (groupMode == 4) 8 else selectedClass
+                                viewModel.exportConsolidatedPdf(context, targetClass) { file ->
                                     Toast.makeText(context, "PDF அறிக்கை தயார்", Toast.LENGTH_SHORT).show()
                                     PdfReportGenerator.sharePdfFile(context, file, "${schoolProfile.schoolName} முப்பருவ சராசரி பதிவேடு")
                                 }
@@ -258,15 +482,19 @@ fun ConsolidationScreen(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = NavyPrimary),
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.testTag("consolidation_pdf_btn")
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(38.dp)
+                            .testTag("consolidation_pdf_btn")
                     ) {
-                        Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("PDF", fontSize = 12.sp)
+                        Text(if (groupMode in 1..3) "ஒருங்கிணைந்த PDF" else "PDF பதிவிறக்கம்", fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                     }
 
                     // A4 Rank Card quick action for selected term
-                    if (viewModeTab in 1..3 && records.isNotEmpty()) {
+                    if (viewModeTab in 1..3 && records.isNotEmpty() && groupMode == 0) {
                         Button(
                             onClick = {
                                 viewModel.exportClassAllTermRankCardsPdf(context, records, viewModeTab) { file ->
@@ -275,11 +503,14 @@ fun ConsolidationScreen(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = AmberGold),
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.testTag("consolidation_rank_cards_btn")
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                            modifier = Modifier
+                                .height(38.dp)
+                                .testTag("consolidation_rank_cards_btn")
                         ) {
-                            Icon(Icons.Default.Print, contentDescription = null, modifier = Modifier.size(16.dp), tint = NavyDark)
+                            Icon(Icons.Default.Print, contentDescription = null, modifier = Modifier.size(15.dp), tint = NavyDark)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("A4 தர அட்டைகள்", fontSize = 12.sp, color = NavyDark, fontWeight = FontWeight.Bold)
+                            Text("A4 அட்டைகள்", fontSize = 11.5.sp, color = NavyDark, fontWeight = FontWeight.Bold, maxLines = 1)
                         }
                     }
                 }
@@ -385,7 +616,7 @@ fun ConsolidationScreen(
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         Text(
-                                            text = schoolProfile.schoolName,
+                                            text = if (schoolProfile.udiseCode.isNotBlank()) "${schoolProfile.schoolName} (UDISE: ${schoolProfile.udiseCode})" else schoolProfile.schoolName,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
                                             color = NavyPrimary
@@ -441,19 +672,24 @@ fun ConsolidationScreen(
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         Text(
-                                            text = schoolProfile.schoolName,
+                                            text = if (schoolProfile.udiseCode.isNotBlank()) "${schoolProfile.schoolName} (UDISE: ${schoolProfile.udiseCode})" else schoolProfile.schoolName,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
                                             color = NavyPrimary
                                         )
                                         Text(
-                                            text = "${schoolProfile.unionName}   |   ${schoolProfile.districtName}",
+                                            text = if (schoolProfile.udiseCode.isNotBlank()) "${schoolProfile.unionName}   |   ${schoolProfile.districtName}   |   UDISE: ${schoolProfile.udiseCode}" else "${schoolProfile.unionName}   |   ${schoolProfile.districtName}",
                                             fontSize = 12.sp,
                                             color = Color.DarkGray
                                         )
                                         Text(
-                                            text = if (viewModeTab == 0) "முப்பருவ சராசரி மதிப்பெண் பட்டியல் (வகுப்பு $selectedClass)"
-                                            else "${tabs[viewModeTab]} மதிப்பெண் பட்டியல் (வகுப்பு $selectedClass)",
+                                            text = when (groupMode) {
+                                                1 -> if (viewModeTab == 0) "முப்பருவ சராசரி மதிப்பெண் பட்டியல் (வகுப்பு 1 - 3)" else "${tabs[viewModeTab]} மதிப்பெண் பட்டியல் (வகுப்பு 1 - 3)"
+                                                2 -> if (viewModeTab == 0) "முப்பருவ சராசரி மதிப்பெண் பட்டியல் (வகுப்பு 4 - 5)" else "${tabs[viewModeTab]} மதிப்பெண் பட்டியல் (வகுப்பு 4 - 5)"
+                                                3 -> if (viewModeTab == 0) "முப்பருவ சராசரி மதிப்பெண் பட்டியல் (வகுப்பு 6 - 7)" else "${tabs[viewModeTab]} மதிப்பெண் பட்டியல் (வகுப்பு 6 - 7)"
+                                                4 -> if (viewModeTab == 0) "முப்பருவ சராசரி மதிப்பெண் பட்டியல் (வகுப்பு 8)" else "${tabs[viewModeTab]} மதிப்பெண் பட்டியல் (வகுப்பு 8)"
+                                                else -> if (viewModeTab == 0) "முப்பருவ சராசரி மதிப்பெண் பட்டியல் (வகுப்பு $selectedClass)" else "${tabs[viewModeTab]} மதிப்பெண் பட்டியல் (வகுப்பு $selectedClass)"
+                                            },
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp,
                                             color = AmberGold
@@ -462,22 +698,67 @@ fun ConsolidationScreen(
 
                                     Spacer(modifier = Modifier.height(6.dp))
 
-                                    // Table Header Rows
-                                    TableHeader(subjects = subjects, isAverageMode = viewModeTab == 0, isClass1To3 = selectedClass in 1..3)
+                                    if (groupMode in 1..3) {
+                                        TableHeader(subjects = subjects, isAverageMode = viewModeTab == 0, isClass1To3 = groupMode == 1)
 
-                                    // Student Rows
-                                    records.forEachIndexed { idx, record ->
-                                        StudentRow(
-                                            sNo = idx + 1,
-                                            record = record,
-                                            subjects = subjects,
-                                            viewMode = viewModeTab,
-                                            isClass1To3 = selectedClass in 1..3,
-                                            onRowClick = {
-                                                selectedRankCardRecord = record
-                                                showRankCardDialog = true
+                                        var sNoCounter = 1
+                                        val classesInGroup = when (groupMode) {
+                                            1 -> listOf(1, 2, 3)
+                                            2 -> listOf(4, 5)
+                                            3 -> listOf(6, 7)
+                                            else -> emptyList()
+                                        }
+                                        classesInGroup.forEach { cls ->
+                                            val classRecs = groupRecordsMap[cls] ?: emptyList()
+                                            if (classRecs.isNotEmpty()) {
+                                                // Class Divider Banner Row
+                                                Surface(
+                                                    color = if (cls % 2 == 1) Color(0xFFE0E7FF) else Color(0xFFFEF3C7),
+                                                    border = BorderStroke(0.5.dp, Color.LightGray),
+                                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = "★ வகுப்பு $cls (CLASS $cls) — ${classRecs.size} மாணவர்கள் ★",
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 12.sp,
+                                                        color = NavyDark,
+                                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                                                    )
+                                                }
+
+                                                classRecs.forEach { record ->
+                                                    StudentRow(
+                                                        sNo = sNoCounter++,
+                                                        record = record,
+                                                        subjects = subjects,
+                                                        viewMode = viewModeTab,
+                                                        isClass1To3 = groupMode == 1,
+                                                        onRowClick = {
+                                                            selectedRankCardRecord = record
+                                                            showRankCardDialog = true
+                                                        }
+                                                    )
+                                                }
                                             }
-                                        )
+                                        }
+                                    } else {
+                                        // Standard Single Class
+                                        TableHeader(subjects = subjects, isAverageMode = viewModeTab == 0, isClass1To3 = selectedClass in 1..3)
+
+                                        // Student Rows
+                                        records.forEachIndexed { idx, record ->
+                                            StudentRow(
+                                                sNo = idx + 1,
+                                                record = record,
+                                                subjects = subjects,
+                                                viewMode = viewModeTab,
+                                                isClass1To3 = selectedClass in 1..3,
+                                                onRowClick = {
+                                                    selectedRankCardRecord = record
+                                                    showRankCardDialog = true
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }

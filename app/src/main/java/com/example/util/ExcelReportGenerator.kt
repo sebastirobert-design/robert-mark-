@@ -38,8 +38,9 @@ object ExcelReportGenerator {
 
             OutputStreamWriter(fos, StandardCharsets.UTF_8).use { writer ->
                 // Header rows
-                writer.appendLine("\"${school.schoolName}\"")
-                writer.appendLine("\"${school.unionName}\",\"${school.districtName}\"")
+                val schoolTitle = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+                writer.appendLine("\"$schoolTitle\"")
+                writer.appendLine("\"${school.unionName}\",\"${school.districtName}\",\"UDISE: ${school.udiseCode}\"")
                 writer.appendLine("\"முப்பருவ சராசரி மதிப்பெண் பட்டியல் (Three Terms Average Marks Register)\"")
                 writer.appendLine("\"வகுப்பு: $stdClass\",\"கல்வியாண்டு: ${school.academicYear}\"")
                 writer.appendLine("")
@@ -136,8 +137,9 @@ object ExcelReportGenerator {
             fos.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
 
             OutputStreamWriter(fos, StandardCharsets.UTF_8).use { writer ->
-                writer.appendLine("\"${school.schoolName}\"")
-                writer.appendLine("\"${school.unionName}\",\"${school.districtName}\"")
+                val schoolTitle = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+                writer.appendLine("\"$schoolTitle\"")
+                writer.appendLine("\"${school.unionName}\",\"${school.districtName}\",\"UDISE: ${school.udiseCode}\"")
                 writer.appendLine("\"பருவம்: $term மதிப்பெண் பட்டியல் (Term $term Marks Register)\"")
                 writer.appendLine("\"வகுப்பு: $stdClass\",\"கல்வியாண்டு: ${school.academicYear}\"")
                 writer.appendLine("")
@@ -236,7 +238,9 @@ object ExcelReportGenerator {
             fos.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
 
             OutputStreamWriter(fos, StandardCharsets.UTF_8).use { writer ->
-                writer.appendLine("\"${school.schoolName}\"")
+                val schoolTitle = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+                writer.appendLine("\"$schoolTitle\"")
+                writer.appendLine("\"${school.unionName}\",\"${school.districtName}\",\"UDISE: ${school.udiseCode}\"")
                 writer.appendLine("\"${school.academicYear} மாணவர் மதிப்பெண் பதிவேடு பருவம் : $term\"")
                 writer.appendLine("\"புதிய பாடத்திட்டம் வகுப்பு : $stdClass\",\"பாடம்: ${subject.tamilName} (${subject.name})\"")
                 writer.appendLine("")
@@ -284,6 +288,122 @@ object ExcelReportGenerator {
                     row.append("\"$tot\",\"$pct\"")
 
                     writer.appendLine(row.toString())
+                }
+            }
+        }
+
+        return file
+    }
+
+    /**
+     * Generates a combined group CSV report for paper saving across multiple classes.
+     */
+    fun generateCombinedGroupCsv(
+        context: Context,
+        school: SchoolProfile,
+        groupTitle: String,
+        classRecordsMap: Map<Int, List<StudentConsolidatedRecord>>,
+        term: Int = 0
+    ): File {
+        val safeTitle = groupTitle.replace(" ", "_").replace("/", "_")
+        val fileName = "Combined_Register_${safeTitle}_${school.academicYear.replace("-", "_")}.csv"
+        val reportsDir = File(context.cacheDir, "reports")
+        if (!reportsDir.exists()) reportsDir.mkdirs()
+        val file = File(reportsDir, fileName)
+
+        val isPrimaryGroup = classRecordsMap.keys.all { it in 1..3 }
+        val subjects = if (isPrimaryGroup) {
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS)
+        } else {
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.SCIENCE, Subject.SOCIAL)
+        }
+        val maxTotal = subjects.size * 100
+
+        FileOutputStream(file).use { fos ->
+            fos.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
+
+            OutputStreamWriter(fos, StandardCharsets.UTF_8).use { writer ->
+                val schoolTitle = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+                writer.appendLine("\"$schoolTitle\"")
+                writer.appendLine("\"${school.unionName}\",\"${school.districtName}\",\"UDISE: ${school.udiseCode}\"")
+                val termTitle = if (term == 0) "முப்பருவ சராசரி ஒருங்கிணைந்த பதிவேடு" else "பருவம் $term ஒருங்கிணைந்த பதிவேடு"
+                writer.appendLine("\"$groupTitle - $termTitle\"")
+                writer.appendLine("\"கல்வியாண்டு: ${school.academicYear}\"")
+                writer.appendLine("")
+
+                val row1 = StringBuilder("\"வ.எண்\",\"வகுப்பு\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"இனம்\"")
+                for (sub in subjects) {
+                    row1.append(",\"${sub.tamilName}\",\"\",\"\"")
+                }
+                row1.append(",\"மொத்தம் ($maxTotal)\",\"பள்ளி நாட்கள்\",\"வருகை\",\"சராசரி %\"")
+                writer.appendLine(row1.toString())
+
+                val row2 = StringBuilder("\"\",\"\",\"\",\"\",\"\"")
+                for (sub in subjects) {
+                    row2.append(",\"SA\",\"FA\",\"மொ\"")
+                }
+                row2.append(",\"\",\"\",\"\",\"\"")
+                writer.appendLine(row2.toString())
+
+                var sNoCounter = 1
+                classRecordsMap.toSortedMap().forEach { (cls, recs) ->
+                    if (recs.isNotEmpty()) {
+                        writer.appendLine("\"--- வகுப்பு $cls (CLASS $cls) - ${recs.size} மாணவர்கள் ---\"")
+                        recs.forEach { record ->
+                            val row = StringBuilder()
+                            row.append("\"${sNoCounter++}\",")
+                            row.append("\"$cls\",")
+                            row.append("\"${record.student.admissionNo}\",")
+                            row.append("\"${record.student.name}\",")
+                            row.append("\"${record.student.community}\"")
+
+                            for (sub in subjects) {
+                                val sm = record.subjectMarks[sub]
+                                val (sa, fa, tot) = if (term == 0) {
+                                    Triple(sm?.avgSa ?: 0, sm?.avgFa ?: 0, sm?.avgTotal ?: 0)
+                                } else {
+                                    val tm = when (term) {
+                                        1 -> sm?.term1Marks
+                                        2 -> sm?.term2Marks
+                                        3 -> sm?.term3Marks
+                                        else -> null
+                                    }
+                                    Triple(tm?.sa ?: 0, tm?.faTotal ?: 0, tm?.total ?: 0)
+                                }
+                                row.append(",\"$sa\",\"$fa\",\"$tot\"")
+                            }
+
+                            val totalMark = if (term == 0) {
+                                subjects.sumOf { sub -> record.subjectMarks[sub]?.avgTotal ?: 0 }
+                            } else {
+                                subjects.sumOf { sub ->
+                                    val sm = record.subjectMarks[sub]
+                                    val tm = when (term) {
+                                        1 -> sm?.term1Marks
+                                        2 -> sm?.term2Marks
+                                        3 -> sm?.term3Marks
+                                        else -> null
+                                    }
+                                    tm?.total ?: 0
+                                }
+                            }
+                            val att = when (term) {
+                                1 -> record.term1Attendance
+                                2 -> record.term2Attendance
+                                3 -> record.term3Attendance
+                                else -> null
+                            }
+                            val (wDays, pDays) = if (term == 0) {
+                                Pair(record.totalWorkingDays, record.totalPresentDays)
+                            } else {
+                                Pair(att?.totalWorkingDays ?: school.getWorkingDaysForTerm(term), att?.presentDays ?: 0)
+                            }
+                            val pct = if (maxTotal > 0) String.format("%.1f%%", (totalMark.toDouble() / maxTotal) * 100) else "0.0%"
+
+                            row.append(",\"$totalMark\",\"$wDays\",\"$pDays\",\"$pct\"")
+                            writer.appendLine(row.toString())
+                        }
+                    }
                 }
             }
         }

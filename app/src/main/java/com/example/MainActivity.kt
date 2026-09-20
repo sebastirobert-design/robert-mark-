@@ -42,6 +42,7 @@ import com.example.ui.screens.CertificateScreen
 import com.example.ui.screens.ConsolidationScreen
 import com.example.ui.screens.DashboardScreen
 import com.example.ui.screens.MarksEntryScreen
+import com.example.ui.screens.ParentLetterScreen
 import com.example.ui.screens.SchoolSettingsScreen
 import com.example.ui.screens.StudentsScreen
 import com.example.ui.theme.AmberGold
@@ -94,9 +95,13 @@ fun MainAppScreen(viewModel: SchoolMarksViewModel) {
                             color = Color.White
                         )
                         Text(
-                            text = schoolProfile.schoolName.ifEmpty { "மதிப்பெண் பதிவேடு" },
+                            text = if (schoolProfile.udiseCode.isNotBlank()) {
+                                "${schoolProfile.schoolName} (UDISE: ${schoolProfile.udiseCode})"
+                            } else {
+                                schoolProfile.schoolName.ifEmpty { "மதிப்பெண் பதிவேடு" }
+                            },
                             fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.8f),
+                            color = Color.White.copy(alpha = 0.85f),
                             maxLines = 1
                         )
                     }
@@ -196,6 +201,10 @@ fun MainAppScreen(viewModel: SchoolMarksViewModel) {
                 modifier = Modifier.padding(innerPadding)
             )
             AppNavDestination.CERTIFICATE -> CertificateScreen(
+                viewModel = viewModel,
+                modifier = Modifier.padding(innerPadding)
+            )
+            AppNavDestination.PARENT_LETTERS -> ParentLetterScreen(
                 viewModel = viewModel,
                 modifier = Modifier.padding(innerPadding)
             )

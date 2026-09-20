@@ -12,12 +12,18 @@ import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.example.data.model.SchoolProfile
+import com.example.data.model.Student
 import com.example.data.model.StudentConsolidatedRecord
 import com.example.data.model.Subject
 import java.io.File
 import java.io.FileOutputStream
 
 object PdfReportGenerator {
+
+    sealed class GroupRowItem {
+        data class ClassDivider(val stdClass: Int, val count: Int) : GroupRowItem()
+        data class StudentItem(val record: StudentConsolidatedRecord, val classIndex: Int) : GroupRowItem()
+    }
 
     /**
      * Generates a printable A4 Landscape PDF for the Three Terms Average Register.
@@ -99,12 +105,14 @@ object PdfReportGenerator {
         paint.textSize = 15f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.textAlign = Paint.Align.CENTER
-        canvas.drawText(school.schoolName, pageWidth / 2f, margin + 16f, paint)
+        val schoolHeader = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+        canvas.drawText(schoolHeader, pageWidth / 2f, margin + 16f, paint)
 
         paint.color = Color.rgb(55, 65, 81)
         paint.textSize = 10.5f
         paint.typeface = Typeface.DEFAULT
-        canvas.drawText("${school.unionName}   |   ${school.districtName}", pageWidth / 2f, margin + 30f, paint)
+        val subHeader = if (school.udiseCode.isNotBlank()) "${school.unionName}   |   ${school.districtName}   |   UDISE: ${school.udiseCode}" else "${school.unionName}   |   ${school.districtName}"
+        canvas.drawText(subHeader, pageWidth / 2f, margin + 30f, paint)
 
         paint.color = Color.rgb(180, 83, 9) // Amber/Gold accent
         paint.textSize = 12f
@@ -425,12 +433,14 @@ object PdfReportGenerator {
         paint.color = Color.rgb(26, 35, 126)
         paint.textSize = 16f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText(school.schoolName, pageWidth / 2f, margin + 50f, paint)
+        val schoolHeader = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+        canvas.drawText(schoolHeader, pageWidth / 2f, margin + 50f, paint)
 
         paint.color = Color.rgb(75, 85, 99)
         paint.textSize = 10f
         paint.typeface = Typeface.DEFAULT
-        canvas.drawText("${school.unionName}, ${school.districtName}", pageWidth / 2f, margin + 66f, paint)
+        val subLine = if (school.udiseCode.isNotBlank()) "${school.unionName}, ${school.districtName} | UDISE: ${school.udiseCode}" else "${school.unionName}, ${school.districtName}"
+        canvas.drawText(subLine, pageWidth / 2f, margin + 66f, paint)
 
         // Certificate Title Banner
         val bannerTop = margin + 80f
@@ -910,7 +920,8 @@ object PdfReportGenerator {
         paint.textSize = 15f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.textAlign = Paint.Align.CENTER
-        canvas.drawText(school.schoolName, pageWidth / 2f, margin + 14f, paint)
+        val schoolHeader = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+        canvas.drawText(schoolHeader, pageWidth / 2f, margin + 14f, paint)
 
         // Sub Header: 2026-27 மாணவர் மதிப்பெண் பதிவேடு பருவம் : 1
         val subBarTop = margin + 22f
@@ -1367,12 +1378,17 @@ object PdfReportGenerator {
         paint.color = Color.rgb(26, 35, 126)
         paint.textSize = 14.5f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText(school.schoolName, pageWidth / 2f, margin + 42f, paint)
+        val schoolHeader = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+        canvas.drawText(schoolHeader, pageWidth / 2f, margin + 42f, paint)
 
         paint.color = Color.rgb(71, 85, 105)
         paint.textSize = 8.5f
         paint.typeface = Typeface.DEFAULT
-        val subLine = "${school.unionName}, ${school.districtName} | கல்வியாண்டு: ${school.academicYear}"
+        val subLine = if (school.udiseCode.isNotBlank()) {
+            "${school.unionName}, ${school.districtName} | UDISE: ${school.udiseCode} | கல்வியாண்டு: ${school.academicYear}"
+        } else {
+            "${school.unionName}, ${school.districtName} | கல்வியாண்டு: ${school.academicYear}"
+        }
         canvas.drawText(subLine, pageWidth / 2f, margin + 57f, paint)
 
         // 3. Title Banner
@@ -2086,5 +2102,731 @@ object PdfReportGenerator {
         }
 
         context.startActivity(Intent.createChooser(intent, "PDF பார்க்க"))
+    }
+
+    /**
+     * Generates a single continuous combined A4 Landscape PDF for multiple classes (e.g. 1-3 or 4-7).
+     * Automatically eliminates page waste for small class sizes by printing classes consecutively
+     * on the same sheet separated by elegant class header divider banners.
+     */
+    fun generateCombinedGroupPdf(
+        context: Context,
+        school: SchoolProfile,
+        groupTitle: String,
+        classRecordsMap: Map<Int, List<StudentConsolidatedRecord>>,
+        term: Int = 0
+    ): File {
+        val safeTitle = groupTitle.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "_")
+        val fileName = "Combined_Register_${safeTitle}_${school.academicYear.replace("-", "_")}.pdf"
+        val reportsDir = File(context.cacheDir, "reports")
+        if (!reportsDir.exists()) reportsDir.mkdirs()
+        val file = File(reportsDir, fileName)
+
+        val pageWidth = 842
+        val pageHeight = 595
+        val document = PdfDocument()
+
+        val sampleClass = classRecordsMap.keys.firstOrNull() ?: 1
+        val isPrimaryGroup = classRecordsMap.keys.all { it in 1..3 }
+        val subjects = if (isPrimaryGroup) {
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS)
+        } else {
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.SCIENCE, Subject.SOCIAL)
+        }
+
+        // Build continuous items list
+        val allItems = mutableListOf<GroupRowItem>()
+        classRecordsMap.toSortedMap().forEach { (cls, recs) ->
+            if (recs.isNotEmpty()) {
+                allItems.add(GroupRowItem.ClassDivider(cls, recs.size))
+                recs.forEachIndexed { idx, r ->
+                    allItems.add(GroupRowItem.StudentItem(r, idx + 1))
+                }
+            }
+        }
+
+        val itemsPerPage = 17
+        val pageCount = if (allItems.isEmpty()) 1 else ((allItems.size - 1) / itemsPerPage) + 1
+
+        for (p in 0 until pageCount) {
+            val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, p + 1).create()
+            val page = document.startPage(pageInfo)
+            val canvas = page.canvas
+
+            val pageItems = allItems.drop(p * itemsPerPage).take(itemsPerPage)
+            drawCombinedGroupPage(
+                canvas = canvas,
+                pageWidth = pageWidth,
+                pageHeight = pageHeight,
+                school = school,
+                groupTitle = groupTitle,
+                subjects = subjects,
+                pageIndex = p,
+                totalPages = pageCount,
+                items = pageItems,
+                term = term,
+                isPrimaryGroup = isPrimaryGroup
+            )
+
+            document.finishPage(page)
+        }
+
+        FileOutputStream(file).use { fos ->
+            document.writeTo(fos)
+        }
+        document.close()
+
+        return file
+    }
+
+    private fun drawCombinedGroupPage(
+        canvas: Canvas,
+        pageWidth: Int,
+        pageHeight: Int,
+        school: SchoolProfile,
+        groupTitle: String,
+        subjects: List<Subject>,
+        pageIndex: Int,
+        totalPages: Int,
+        items: List<Any>, // GroupRowItem
+        term: Int,
+        isPrimaryGroup: Boolean
+    ) {
+        val margin = 24f
+        val paint = Paint().apply { isAntiAlias = true }
+        val strokePaint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.STROKE
+            strokeWidth = 1f
+            color = Color.DKGRAY
+        }
+
+        // 1. Header Banner
+        paint.color = Color.rgb(26, 35, 126) // Deep Navy
+        paint.textSize = 14.5f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        paint.textAlign = Paint.Align.CENTER
+        val schoolHeader = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+        canvas.drawText(schoolHeader, pageWidth / 2f, margin + 15f, paint)
+
+        paint.color = Color.rgb(55, 65, 81)
+        paint.textSize = 10f
+        paint.typeface = Typeface.DEFAULT
+        val subHeader = if (school.udiseCode.isNotBlank()) "${school.unionName}   |   ${school.districtName}   |   UDISE: ${school.udiseCode}" else "${school.unionName}   |   ${school.districtName}"
+        canvas.drawText(subHeader, pageWidth / 2f, margin + 28f, paint)
+
+        paint.color = Color.rgb(180, 83, 9)
+        paint.textSize = 11.5f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        val termTitle = if (term == 0) "முப்பருவ சராசரி ஒருங்கிணைந்த மதிப்பெண் பதிவேடு" else "பருவம் $term ஒருங்கிணைந்த மதிப்பெண் பதிவேடு"
+        canvas.drawText("$groupTitle - $termTitle", pageWidth / 2f, margin + 43f, paint)
+
+        paint.color = Color.BLACK
+        paint.textSize = 9.5f
+        paint.typeface = Typeface.DEFAULT
+        paint.textAlign = Paint.Align.LEFT
+        canvas.drawText("ஒருங்கிணைந்த பதிவேடு (காகிதம் சிக்கனம்)", margin, margin + 55f, paint)
+
+        paint.textAlign = Paint.Align.RIGHT
+        canvas.drawText("கல்வியாண்டு: ${school.academicYear}   (பக்கம் ${pageIndex + 1}/$totalPages)", pageWidth - margin, margin + 55f, paint)
+
+        // 2. Table Column Dimensions
+        val tableTop = margin + 62f
+        val tableLeft = margin
+        val tableRight = pageWidth - margin
+        val tableWidth = tableRight - tableLeft
+
+        val sNoW = 24f
+        val clsW = 28f
+        val admW = 42f
+        val nameW = 104f
+        val commW = 26f
+        val endW = 42f + 36f + 36f + 56f
+        val remainingW = tableWidth - (sNoW + clsW + admW + nameW + commW + endW)
+        val subjectW = remainingW / subjects.size
+        val subColW = subjectW / 3f
+
+        val headerH1 = 18f
+        val headerH2 = 14f
+        val rowH = 22f
+
+        // Draw Table Header Background
+        paint.color = Color.rgb(238, 242, 255)
+        paint.style = Paint.Style.FILL
+        canvas.drawRect(tableLeft, tableTop, tableRight, tableTop + headerH1 + headerH2, paint)
+        canvas.drawRect(tableLeft, tableTop, tableRight, tableTop + headerH1 + headerH2, strokePaint)
+
+        val headerTextPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.rgb(30, 41, 59)
+            textSize = 7.5f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textAlign = Paint.Align.CENTER
+        }
+
+        canvas.drawText("வ.எண்", tableLeft + sNoW / 2f, tableTop + 20f, headerTextPaint)
+        canvas.drawText("வகுப்பு", tableLeft + sNoW + clsW / 2f, tableTop + 20f, headerTextPaint)
+        canvas.drawText("சே.எண்", tableLeft + sNoW + clsW + admW / 2f, tableTop + 20f, headerTextPaint)
+        canvas.drawText("மாணவர் பெயர்", tableLeft + sNoW + clsW + admW + nameW / 2f, tableTop + 20f, headerTextPaint)
+        canvas.drawText("இனம்", tableLeft + sNoW + clsW + admW + nameW + commW / 2f, tableTop + 20f, headerTextPaint)
+
+        var curX = tableLeft + sNoW + clsW + admW + nameW + commW
+        val subTextPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.DKGRAY
+            textSize = 6.5f
+            textAlign = Paint.Align.CENTER
+        }
+
+        for (sub in subjects) {
+            canvas.drawText(sub.shortName, curX + subjectW / 2f, tableTop + 12f, headerTextPaint)
+            canvas.drawText("SA", curX + subColW * 0.5f, tableTop + headerH1 + 10f, subTextPaint)
+            canvas.drawText("FA", curX + subColW * 1.5f, tableTop + headerH1 + 10f, subTextPaint)
+            canvas.drawText("மொ", curX + subColW * 2.5f, tableTop + headerH1 + 10f, subTextPaint)
+
+            canvas.drawLine(curX, tableTop + headerH1, curX + subjectW, tableTop + headerH1, strokePaint)
+            canvas.drawLine(curX + subColW, tableTop + headerH1, curX + subColW, tableTop + headerH1 + headerH2, strokePaint)
+            canvas.drawLine(curX + subColW * 2f, tableTop + headerH1, curX + subColW * 2f, tableTop + headerH1 + headerH2, strokePaint)
+            canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+            curX += subjectW
+        }
+
+        val maxAcademicTotal = if (isPrimaryGroup) 300 else 500
+        canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+        canvas.drawText("மொத்தம்", curX + 21f, tableTop + 12f, headerTextPaint)
+        canvas.drawText("($maxAcademicTotal)", curX + 21f, tableTop + headerH1 + 10f, subTextPaint)
+        curX += 42f
+
+        canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+        canvas.drawText("வேலை", curX + 18f, tableTop + 20f, headerTextPaint)
+        curX += 36f
+
+        canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+        canvas.drawText("வருகை", curX + 18f, tableTop + 20f, headerTextPaint)
+        curX += 36f
+
+        canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+        canvas.drawText("முடிவு", curX + 28f, tableTop + 20f, headerTextPaint)
+
+        // Draw Rows
+        var rowY = tableTop + headerH1 + headerH2
+        val rowTextPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.BLACK
+            textSize = 7.5f
+            textAlign = Paint.Align.CENTER
+        }
+        val nameTextPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.BLACK
+            textSize = 7.5f
+            textAlign = Paint.Align.LEFT
+        }
+
+        var globalSno = 1
+        for (item in items) {
+            val itemStr = item.toString()
+            if (itemStr.contains("ClassDivider")) {
+                // Class Divider Banner Row
+                val stdClass = when {
+                    itemStr.contains("stdClass=1") -> 1
+                    itemStr.contains("stdClass=2") -> 2
+                    itemStr.contains("stdClass=3") -> 3
+                    itemStr.contains("stdClass=4") -> 4
+                    itemStr.contains("stdClass=5") -> 5
+                    itemStr.contains("stdClass=6") -> 6
+                    itemStr.contains("stdClass=7") -> 7
+                    itemStr.contains("stdClass=8") -> 8
+                    else -> 1
+                }
+                paint.color = Color.rgb(224, 231, 255) // Indigo tint
+                paint.style = Paint.Style.FILL
+                canvas.drawRect(tableLeft, rowY, tableRight, rowY + 18f, paint)
+                canvas.drawRect(tableLeft, rowY, tableRight, rowY + 18f, strokePaint)
+
+                val dividerPaint = Paint().apply {
+                    isAntiAlias = true
+                    color = Color.rgb(30, 58, 138)
+                    textSize = 8.5f
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    textAlign = Paint.Align.CENTER
+                }
+                canvas.drawText("★  வகுப்பு $stdClass (CLASS $stdClass)  ★", pageWidth / 2f, rowY + 12f, dividerPaint)
+                rowY += 18f
+            } else {
+                // Student Data Row
+                // Extract record safely
+                val field = item.javaClass.getDeclaredField("record").apply { isAccessible = true }
+                val record = field.get(item) as StudentConsolidatedRecord
+                val classIdxField = item.javaClass.getDeclaredField("classIndex").apply { isAccessible = true }
+                val classIndex = classIdxField.getInt(item)
+
+                val isEven = globalSno % 2 == 0
+                if (isEven) {
+                    paint.color = Color.rgb(250, 250, 250)
+                    paint.style = Paint.Style.FILL
+                    canvas.drawRect(tableLeft, rowY, tableRight, rowY + rowH, paint)
+                }
+                canvas.drawRect(tableLeft, rowY, tableRight, rowY + rowH, strokePaint)
+
+                canvas.drawText("$globalSno", tableLeft + sNoW / 2f, rowY + 14f, rowTextPaint)
+                canvas.drawText("${record.student.stdClass}", tableLeft + sNoW + clsW / 2f, rowY + 14f, rowTextPaint)
+                canvas.drawText(record.student.admissionNo, tableLeft + sNoW + clsW + admW / 2f, rowY + 14f, rowTextPaint)
+
+                val studentName = record.student.name
+                val displayName = if (studentName.length > 17) studentName.take(16) + ".." else studentName
+                canvas.drawText(displayName, tableLeft + sNoW + clsW + admW + 4f, rowY + 14f, nameTextPaint)
+                canvas.drawText(record.student.community, tableLeft + sNoW + clsW + admW + nameW + commW / 2f, rowY + 14f, rowTextPaint)
+
+                var rx = tableLeft + sNoW + clsW + admW + nameW + commW
+                for (sub in subjects) {
+                    val sm = record.subjectMarks[sub]
+                    val (saStr, faStr, totStr) = if (term == 0) {
+                        Triple(
+                            if (sm?.avgSa != null) "${sm.avgSa}" else "-",
+                            if (sm?.avgFa != null) "${sm.avgFa}" else "-",
+                            if (sm?.avgTotal != null) "${sm.avgTotal}" else "-"
+                        )
+                    } else {
+                        val tm = when (term) {
+                            1 -> sm?.term1Marks
+                            2 -> sm?.term2Marks
+                            3 -> sm?.term3Marks
+                            else -> null
+                        }
+                        Triple(
+                            if (tm?.sa != null) "${tm.sa}" else "-",
+                            if (tm?.faTotal != null) "${tm.faTotal}" else "-",
+                            if (tm?.total != null) "${tm.total}" else "-"
+                        )
+                    }
+
+                    canvas.drawText(saStr, rx + subColW * 0.5f, rowY + 14f, rowTextPaint)
+                    canvas.drawText(faStr, rx + subColW * 1.5f, rowY + 14f, rowTextPaint)
+                    val boldTextPaint = Paint(rowTextPaint).apply { typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) }
+                    canvas.drawText(totStr, rx + subColW * 2.5f, rowY + 14f, boldTextPaint)
+
+                    canvas.drawLine(rx + subColW, rowY, rx + subColW, rowY + rowH, strokePaint)
+                    canvas.drawLine(rx + subColW * 2f, rowY, rx + subColW * 2f, rowY + rowH, strokePaint)
+                    canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                    rx += subjectW
+                }
+
+                // Total column
+                canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                val totalPaint = Paint(rowTextPaint).apply {
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    color = Color.rgb(30, 58, 138)
+                }
+                val grandTotal = if (term == 0) {
+                    record.grandAvgTotal
+                } else {
+                    subjects.sumOf { sub ->
+                        val sm = record.subjectMarks[sub]
+                        val tm = when (term) { 1 -> sm?.term1Marks; 2 -> sm?.term2Marks; 3 -> sm?.term3Marks; else -> null }
+                        tm?.total ?: 0
+                    }
+                }
+                canvas.drawText("$grandTotal", rx + 21f, rowY + 14f, totalPaint)
+                rx += 42f
+
+                // Attendance
+                val att = when (term) {
+                    1 -> record.term1Attendance
+                    2 -> record.term2Attendance
+                    3 -> record.term3Attendance
+                    else -> null
+                }
+                val (wDays, pDays) = if (term == 0) {
+                    Pair(record.totalWorkingDays, record.totalPresentDays)
+                } else {
+                    Pair(att?.totalWorkingDays ?: school.getWorkingDaysForTerm(term), att?.presentDays ?: 0)
+                }
+
+                canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                canvas.drawText("$wDays", rx + 18f, rowY + 14f, rowTextPaint)
+                rx += 36f
+
+                canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                canvas.drawText("$pDays", rx + 18f, rowY + 14f, rowTextPaint)
+                rx += 36f
+
+                canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                val isPass = grandTotal >= (maxAcademicTotal * 0.35)
+                val resultText = if (isPass) "தேர்ச்சி" else "பயிற்சி தேவை"
+                val resultPaint = Paint(rowTextPaint).apply {
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    color = if (isPass) Color.rgb(22, 101, 52) else Color.rgb(185, 28, 28)
+                }
+                canvas.drawText(resultText, rx + 28f, rowY + 14f, resultPaint)
+
+                rowY += rowH
+                globalSno++
+            }
+        }
+
+        // Bottom Signatures
+        val sigY = pageHeight - margin - 12f
+        val sigPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.BLACK
+            textSize = 9.5f
+            typeface = Typeface.DEFAULT
+        }
+        sigPaint.textAlign = Paint.Align.LEFT
+        canvas.drawText("வகுப்பு ஆசிரியர் கையொப்பம்", tableLeft + 16f, sigY, sigPaint)
+
+        sigPaint.textAlign = Paint.Align.RIGHT
+        canvas.drawText("தலைமை ஆசிரியர் கையொப்பம் (${school.headmasterName})", tableRight - 16f, sigY, sigPaint)
+    }
+
+    /**
+     * Generates individualized parent letters / meeting invitations for selected students.
+     * Supports 2 letters per A4 sheet (with cut guide) to save paper, or 1 letter per sheet.
+     */
+    fun generateParentLettersPdf(
+        context: Context,
+        school: SchoolProfile,
+        students: List<Student>,
+        letterTitle: String,
+        letterBody: String,
+        meetingDate: String,
+        meetingPlace: String = "பள்ளி வளாகம்",
+        twoPerSheet: Boolean = true
+    ): File {
+        val fileName = "Parent_Letters_${school.academicYear.replace("-", "_")}.pdf"
+        val reportsDir = File(context.cacheDir, "reports")
+        if (!reportsDir.exists()) reportsDir.mkdirs()
+        val file = File(reportsDir, fileName)
+
+        val pageWidth = 595 // A4 Portrait
+        val pageHeight = 842
+        val document = PdfDocument()
+
+        if (twoPerSheet) {
+            val totalPages = if (students.isEmpty()) 1 else ((students.size - 1) / 2) + 1
+            for (p in 0 until totalPages) {
+                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, p + 1).create()
+                val page = document.startPage(pageInfo)
+                val canvas = page.canvas
+
+                val student1 = students.getOrNull(p * 2)
+                val student2 = students.getOrNull(p * 2 + 1)
+
+                if (student1 != null) {
+                    drawSingleParentLetter(
+                        canvas = canvas,
+                        school = school,
+                        student = student1,
+                        letterTitle = letterTitle,
+                        letterBody = letterBody,
+                        meetingDate = meetingDate,
+                        meetingPlace = meetingPlace,
+                        left = 24f,
+                        top = 20f,
+                        right = pageWidth - 24f,
+                        bottom = 405f,
+                        isHalfSheet = true
+                    )
+                }
+
+                // Middle Cutting Guide Line
+                val dashPaint = Paint().apply {
+                    isAntiAlias = true
+                    color = Color.GRAY
+                    style = Paint.Style.STROKE
+                    strokeWidth = 1f
+                }
+                var cx = 30f
+                while (cx < pageWidth - 30f) {
+                    canvas.drawLine(cx, 415f, cx + 10f, 415f, dashPaint)
+                    cx += 18f
+                }
+                val cutTextPaint = Paint().apply {
+                    isAntiAlias = true
+                    color = Color.DKGRAY
+                    textSize = 8.5f
+                    textAlign = Paint.Align.CENTER
+                }
+                canvas.drawText("✂  இங்கு வெட்டவும் (காகித சிக்கனம்: ஒரு தாளில் 2 கடிதங்கள்)  ✂", pageWidth / 2f, 418f, cutTextPaint)
+
+                if (student2 != null) {
+                    drawSingleParentLetter(
+                        canvas = canvas,
+                        school = school,
+                        student = student2,
+                        letterTitle = letterTitle,
+                        letterBody = letterBody,
+                        meetingDate = meetingDate,
+                        meetingPlace = meetingPlace,
+                        left = 24f,
+                        top = 430f,
+                        right = pageWidth - 24f,
+                        bottom = 815f,
+                        isHalfSheet = true
+                    )
+                }
+
+                document.finishPage(page)
+            }
+        } else {
+            // 1 letter per sheet
+            students.forEachIndexed { idx, st ->
+                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, idx + 1).create()
+                val page = document.startPage(pageInfo)
+                val canvas = page.canvas
+
+                drawSingleParentLetter(
+                    canvas = canvas,
+                    school = school,
+                    student = st,
+                    letterTitle = letterTitle,
+                    letterBody = letterBody,
+                    meetingDate = meetingDate,
+                    meetingPlace = meetingPlace,
+                    left = 28f,
+                    top = 28f,
+                    right = pageWidth - 28f,
+                    bottom = pageHeight - 28f,
+                    isHalfSheet = false
+                )
+
+                document.finishPage(page)
+            }
+        }
+
+        FileOutputStream(file).use { fos ->
+            document.writeTo(fos)
+        }
+        document.close()
+
+        return file
+    }
+
+    private fun drawSingleParentLetter(
+        canvas: Canvas,
+        school: SchoolProfile,
+        student: Student,
+        letterTitle: String,
+        letterBody: String,
+        meetingDate: String,
+        meetingPlace: String,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        isHalfSheet: Boolean
+    ) {
+        val paint = Paint().apply { isAntiAlias = true }
+        val strokePaint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.STROKE
+            strokeWidth = 1.2f
+            color = Color.rgb(30, 41, 59)
+        }
+
+        // Outer Frame
+        canvas.drawRoundRect(RectF(left, top, right, bottom), 8f, 8f, strokePaint)
+        // Inner delicate frame
+        val innerMargin = 3f
+        val innerStroke = Paint(strokePaint).apply { strokeWidth = 0.6f; color = Color.GRAY }
+        canvas.drawRoundRect(RectF(left + innerMargin, top + innerMargin, right - innerMargin, bottom - innerMargin), 6f, 6f, innerStroke)
+
+        var curY = top + (if (isHalfSheet) 18f else 28f)
+
+        // 1. School Header
+        paint.color = Color.rgb(26, 35, 126)
+        paint.textSize = if (isHalfSheet) 12.5f else 15f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        paint.textAlign = Paint.Align.CENTER
+        val schoolHeader = if (school.udiseCode.isNotBlank()) "${school.schoolName} (UDISE: ${school.udiseCode})" else school.schoolName
+        canvas.drawText(schoolHeader, (left + right) / 2f, curY, paint)
+
+        curY += if (isHalfSheet) 13f else 18f
+        paint.color = Color.rgb(71, 85, 105)
+        paint.textSize = if (isHalfSheet) 9f else 11f
+        paint.typeface = Typeface.DEFAULT
+        val subHeader = if (school.udiseCode.isNotBlank()) "${school.unionName}   |   ${school.districtName}   |   UDISE: ${school.udiseCode}" else "${school.unionName}   |   ${school.districtName}"
+        canvas.drawText(subHeader, (left + right) / 2f, curY, paint)
+
+        // 2. Letter Title Badge
+        curY += if (isHalfSheet) 14f else 20f
+        val badgeW = (right - left) * 0.7f
+        val badgeH = if (isHalfSheet) 18f else 24f
+        val badgeLeft = (left + right) / 2f - badgeW / 2f
+        paint.color = Color.rgb(241, 245, 249)
+        paint.style = Paint.Style.FILL
+        canvas.drawRoundRect(RectF(badgeLeft, curY, badgeLeft + badgeW, curY + badgeH), 4f, 4f, paint)
+        canvas.drawRoundRect(RectF(badgeLeft, curY, badgeLeft + badgeW, curY + badgeH), 4f, 4f, innerStroke)
+
+        paint.color = Color.rgb(180, 83, 9)
+        paint.textSize = if (isHalfSheet) 10f else 12.5f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText(letterTitle, (left + right) / 2f, curY + (if (isHalfSheet) 13f else 17f), paint)
+
+        curY += badgeH + (if (isHalfSheet) 12f else 18f)
+
+        // 3. Date & Place
+        paint.color = Color.BLACK
+        paint.textSize = if (isHalfSheet) 8.5f else 10f
+        paint.typeface = Typeface.DEFAULT
+        paint.textAlign = Paint.Align.LEFT
+        canvas.drawText("தேதி: $meetingDate", left + 14f, curY, paint)
+
+        paint.textAlign = Paint.Align.RIGHT
+        canvas.drawText("இடம்: $meetingPlace", right - 14f, curY, paint)
+
+        curY += if (isHalfSheet) 14f else 20f
+
+        // 4. Addressing Box (பெறுநர்)
+        val addrBoxH = if (isHalfSheet) 44f else 54f
+        paint.color = Color.rgb(248, 250, 252)
+        paint.style = Paint.Style.FILL
+        canvas.drawRoundRect(RectF(left + 12f, curY, right - 12f, curY + addrBoxH), 4f, 4f, paint)
+        canvas.drawRoundRect(RectF(left + 12f, curY, right - 12f, curY + addrBoxH), 4f, 4f, innerStroke)
+
+        val addrPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.rgb(15, 23, 42)
+            textSize = if (isHalfSheet) 8.5f else 10f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textAlign = Paint.Align.LEFT
+        }
+
+        val parentDisplayName = if (student.parentName.isNotBlank()) student.parentName else "${student.name} அவர்களின் பெற்றோர்"
+        canvas.drawText("பெறுநர்:  திரு / திருமதி. $parentDisplayName", left + 18f, curY + (if (isHalfSheet) 14f else 17f), addrPaint)
+
+        addrPaint.typeface = Typeface.DEFAULT
+        addrPaint.color = Color.rgb(51, 65, 85)
+        canvas.drawText(
+            "மாணவர்: ${student.name}   |   வகுப்பு: ${student.stdClass} - ${student.section}   |   சேர்க்கை எண்: ${student.admissionNo}",
+            left + 18f,
+            curY + (if (isHalfSheet) 30f else 36f),
+            addrPaint
+        )
+
+        curY += addrBoxH + (if (isHalfSheet) 14f else 20f)
+
+        // 5. Salutation & Letter Body
+        paint.color = Color.BLACK
+        paint.textSize = if (isHalfSheet) 9f else 11f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        paint.textAlign = Paint.Align.LEFT
+        canvas.drawText("மதிப்பிற்குரிய பெற்றோர் அவர்களுக்கு, வணக்கம்.", left + 14f, curY, paint)
+
+        curY += if (isHalfSheet) 14f else 20f
+
+        // Format message by replacing placeholders
+        val resolvedBody = letterBody
+            .replace("{parent_name}", parentDisplayName)
+            .replace("{student_name}", student.name)
+            .replace("{class_section}", "${student.stdClass} - ${student.section}")
+            .replace("{admission_no}", student.admissionNo)
+            .replace("{date}", meetingDate)
+            .replace("{place}", meetingPlace)
+            .replace("{school_name}", school.schoolName)
+
+        val bodyPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.rgb(30, 41, 59)
+            textSize = if (isHalfSheet) 8.5f else 10.5f
+            typeface = Typeface.DEFAULT
+            textAlign = Paint.Align.LEFT
+        }
+
+        val maxWidth = (right - left) - 28f
+        val lineHeight = if (isHalfSheet) 13f else 18f
+        val maxBodyLines = if (isHalfSheet) 7 else 14
+
+        drawWrappedText(
+            canvas = canvas,
+            text = resolvedBody,
+            x = left + 14f,
+            y = curY,
+            maxWidth = maxWidth,
+            lineHeight = lineHeight,
+            paint = bodyPaint,
+            maxLines = maxBodyLines
+        )
+
+        // 6. Signatures (Positioned near bottom of card)
+        val sigY = bottom - (if (isHalfSheet) 48f else 65f)
+        paint.color = Color.rgb(15, 23, 42)
+        paint.textSize = if (isHalfSheet) 8.5f else 10.5f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        paint.textAlign = Paint.Align.LEFT
+        canvas.drawText("வகுப்பு ஆசிரியர் கையொப்பம்", left + 18f, sigY, paint)
+
+        paint.textAlign = Paint.Align.RIGHT
+        canvas.drawText("தலைமை ஆசிரியர் கையொப்பம்", right - 18f, sigY, paint)
+        paint.typeface = Typeface.DEFAULT
+        paint.textSize = if (isHalfSheet) 7.5f else 9f
+        canvas.drawText("(${school.headmasterName})", right - 18f, sigY + (if (isHalfSheet) 11f else 15f), paint)
+
+        // 7. Tear-off Acknowledgement slip at bottom
+        val ackY = bottom - (if (isHalfSheet) 22f else 30f)
+        val dotPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.LTGRAY
+            style = Paint.Style.STROKE
+            strokeWidth = 0.8f
+        }
+        canvas.drawLine(left + 12f, ackY - 6f, right - 12f, ackY - 6f, dotPaint)
+
+        val ackTextPaint = Paint().apply {
+            isAntiAlias = true
+            color = Color.DKGRAY
+            textSize = if (isHalfSheet) 7.2f else 8.5f
+            textAlign = Paint.Align.LEFT
+        }
+        canvas.drawText(
+            "ஒப்புகை: மாணவர் ${student.name} பெற்றோர் கடிதம் கிடைக்கப்பெற்றேன்.   பெற்றோர் கையொப்பம்: ____________",
+            left + 14f,
+            ackY + 8f,
+            ackTextPaint
+        )
+    }
+
+    private fun drawWrappedText(
+        canvas: Canvas,
+        text: String,
+        x: Float,
+        y: Float,
+        maxWidth: Float,
+        lineHeight: Float,
+        paint: Paint,
+        maxLines: Int
+    ): Float {
+        var curY = y
+        val paragraphs = text.split("\n")
+        var lineCount = 0
+        for (p in paragraphs) {
+            if (p.isBlank()) {
+                curY += lineHeight * 0.5f
+                continue
+            }
+            val words = p.split(" ")
+            var currentLine = ""
+            for (w in words) {
+                val testLine = if (currentLine.isEmpty()) w else "$currentLine $w"
+                val width = paint.measureText(testLine)
+                if (width > maxWidth && currentLine.isNotEmpty()) {
+                    canvas.drawText(currentLine, x, curY, paint)
+                    curY += lineHeight
+                    lineCount++
+                    if (lineCount >= maxLines) return curY
+                    currentLine = w
+                } else {
+                    currentLine = testLine
+                }
+            }
+            if (currentLine.isNotEmpty()) {
+                canvas.drawText(currentLine, x, curY, paint)
+                curY += lineHeight
+                lineCount++
+                if (lineCount >= maxLines) return curY
+            }
+        }
+        return curY
     }
 }
