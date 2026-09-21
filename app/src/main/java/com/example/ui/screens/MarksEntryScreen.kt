@@ -679,8 +679,8 @@ fun StudentMarkForm(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    if (isPrimary) {
-                        // Class 1-3 புதிய பாடத்திட்டம்:
+                    if (student.stdClass in 1..2) {
+                        // Class 1 & 2 புதிய பாடத்திட்டம்:
                         // நானே செய்வேன் - 1 [25 மதிப்பெண்]
                         Card(
                             shape = RoundedCornerShape(10.dp),
@@ -841,7 +841,7 @@ fun StudentMarkForm(
                             }
                         }
 
-                        // திறனறி மதிப்பீடு [50 மதிப்பெண்]
+                        // திறனறி தேர்வு [50 மதிப்பெண்]
                         Card(
                             shape = RoundedCornerShape(10.dp),
                             colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFCE8)),
@@ -855,7 +855,7 @@ fun StudentMarkForm(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "திறனறி மதிப்பீடு",
+                                        text = "திறனறி தேர்வு",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp,
                                         color = Color(0xFFB45309)
@@ -899,6 +899,233 @@ fun StudentMarkForm(
                                             marksState[subject] = data.copy(thiranariWritten = v.coerceIn(0, 40))
                                         },
                                         label = { Text("எழுத்துவழி [40]") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+                    } else if (student.stdClass == 3) {
+                        // Class 3 புதிய பாடத்திட்டம்:
+                        // நானே செய்வேன் - 1 [20 மதிப்பெண்]
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1F2)),
+                            border = BorderStroke(1.dp, Color(0xFFFECDD3)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "நானே செய்வேன் - 1",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = Color(0xFFB91C1C)
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = Color(0xFFFEE2E2)
+                                    ) {
+                                        Text(
+                                            text = "கூட்டுத்தொகை: ${data.naney1Total} / 20",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.5.sp,
+                                            color = Color(0xFFB91C1C),
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = data.naney1Oral.toString(),
+                                        onValueChange = {
+                                            val v = it.toIntOrNull() ?: 0
+                                            marksState[subject] = data.copy(naney1Oral = v.coerceIn(0, 8))
+                                        },
+                                        label = { Text("வாய்மொழி [8]") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    OutlinedTextField(
+                                        value = data.naney1Activity.toString(),
+                                        onValueChange = {
+                                            val v = it.toIntOrNull() ?: 0
+                                            marksState[subject] = data.copy(naney1Activity = v.coerceIn(0, 8))
+                                        },
+                                        label = { Text("செயல்பாடு [8]") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    OutlinedTextField(
+                                        value = data.naney1Written.toString(),
+                                        onValueChange = {
+                                            val v = it.toIntOrNull() ?: 0
+                                            marksState[subject] = data.copy(naney1Written = v.coerceIn(0, 4))
+                                        },
+                                        label = { Text("எழுத்துவழி [4]") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+
+                        // நானே செய்வேன் - 2 [20 மதிப்பெண்]
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1F2)),
+                            border = BorderStroke(1.dp, Color(0xFFFECDD3)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "நானே செய்வேன் - 2",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = Color(0xFFB91C1C)
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = Color(0xFFFEE2E2)
+                                    ) {
+                                        Text(
+                                            text = "கூட்டுத்தொகை: ${data.naney2Total} / 20",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.5.sp,
+                                            color = Color(0xFFB91C1C),
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = data.naney2Oral.toString(),
+                                        onValueChange = {
+                                            val v = it.toIntOrNull() ?: 0
+                                            marksState[subject] = data.copy(naney2Oral = v.coerceIn(0, 8))
+                                        },
+                                        label = { Text("வாய்மொழி [8]") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    OutlinedTextField(
+                                        value = data.naney2Activity.toString(),
+                                        onValueChange = {
+                                            val v = it.toIntOrNull() ?: 0
+                                            marksState[subject] = data.copy(naney2Activity = v.coerceIn(0, 8))
+                                        },
+                                        label = { Text("செயல்பாடு [8]") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    OutlinedTextField(
+                                        value = data.naney2Written.toString(),
+                                        onValueChange = {
+                                            val v = it.toIntOrNull() ?: 0
+                                            marksState[subject] = data.copy(naney2Written = v.coerceIn(0, 4))
+                                        },
+                                        label = { Text("எழுத்துவழி [4]") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+
+                        // திரனறி மதிப்பீடு [60 மதிப்பெண்]
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFEFCE8)),
+                            border = BorderStroke(1.dp, Color(0xFFFEF08A)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "திரனறி மதிப்பீடு",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = Color(0xFFB45309)
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = Color(0xFFFEF9C3)
+                                    ) {
+                                        Text(
+                                            text = "கூட்டுத்தொகை: ${data.thiranariTotal} / 60",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.5.sp,
+                                            color = Color(0xFFB45309),
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = data.thiranariOral.toString(),
+                                        onValueChange = {
+                                            val v = it.toIntOrNull() ?: 0
+                                            marksState[subject] = data.copy(thiranariOral = v.coerceIn(0, 10))
+                                        },
+                                        label = { Text("வாய்மொழி [10]") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    OutlinedTextField(
+                                        value = data.thiranariWritten.toString(),
+                                        onValueChange = {
+                                            val v = it.toIntOrNull() ?: 0
+                                            marksState[subject] = data.copy(thiranariWritten = v.coerceIn(0, 50))
+                                        },
+                                        label = { Text("எழுத்துவழி [50]") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1318,6 +1545,22 @@ fun Class1To3RegisterTableView(
             }
 
             // Scrollable Register Table
+            val isClass3 = stdClass == 3
+            val n1Label = if (isClass3) "நானே செய்வேன் - 1 [20]" else "நானே செய்வேன் - 1 [25]"
+            val n2Label = if (isClass3) "நானே செய்வேன் - 2 [20]" else "நானே செய்வேன் - 2 [25]"
+            val thLabel = if (isClass3) "திரனறி மதிப்பீடு [60]" else "திறனறி தேர்வு [50]"
+
+            val n1OralMax = if (isClass3) 8 else 10
+            val n1ActMax = if (isClass3) 8 else 10
+            val n1WriMax = if (isClass3) 4 else 5
+
+            val n2OralMax = if (isClass3) 8 else 10
+            val n2ActMax = if (isClass3) 8 else 10
+            val n2WriMax = if (isClass3) 4 else 5
+
+            val thOralMax = 10
+            val thWriMax = if (isClass3) 50 else 40
+
             item {
                 Card(
                     shape = RoundedCornerShape(8.dp),
@@ -1337,9 +1580,9 @@ fun Class1To3RegisterTableView(
                             RegisterCell("வ.எண்", 50, Color.Black, FontWeight.Bold)
                             RegisterCell("சேர்க்கை எண்", 90, Color.Black, FontWeight.Bold)
                             RegisterCell("மாணவர் பெயர்", 140, Color.Black, FontWeight.Bold)
-                            RegisterCell("நானே செய்வேன் - 1 [25]", 240, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFEE2E2))
-                            RegisterCell("நானே செய்வேன் - 2 [25]", 240, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFEE2E2))
-                            RegisterCell("திறனறி மதிப்பீடு [50]", 170, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEF3C7))
+                            RegisterCell(n1Label, 240, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFEE2E2))
+                            RegisterCell(n2Label, 240, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFEE2E2))
+                            RegisterCell(thLabel, 170, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEF3C7))
                             RegisterCell("மொத்தம்", 70, Color.Black, FontWeight.Bold, Color(0xFFE2E8F0))
                             RegisterCell("விழுக்காடு", 70, Color.Black, FontWeight.Bold, Color(0xFFE2E8F0))
                         }
@@ -1354,18 +1597,18 @@ fun Class1To3RegisterTableView(
                             RegisterCell("", 140)
 
                             // Naney 1 sub-columns
-                            RegisterCell("வாய்மொழி\n[10]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
-                            RegisterCell("செயல்பாடு\n[10]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
-                            RegisterCell("எழுத்து\n[5]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
+                            RegisterCell("வாய்மொழி\n[$n1OralMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
+                            RegisterCell("செயல்பாடு\n[$n1ActMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
+                            RegisterCell("எழுத்து\n[$n1WriMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
 
                             // Naney 2 sub-columns
-                            RegisterCell("வாய்மொழி\n[10]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
-                            RegisterCell("செயல்பாடு\n[10]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
-                            RegisterCell("எழுத்து\n[5]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
+                            RegisterCell("வாய்மொழி\n[$n2OralMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
+                            RegisterCell("செயல்பாடு\n[$n2ActMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
+                            RegisterCell("எழுத்து\n[$n2WriMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
 
                             // Thiranari sub-columns
-                            RegisterCell("வாய்மொழி\n[10]", 85, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEFCE8))
-                            RegisterCell("எழுத்து\n[40]", 85, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEFCE8))
+                            RegisterCell("வாய்மொழி\n[$thOralMax]", 85, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEFCE8))
+                            RegisterCell("எழுத்து\n[$thWriMax]", 85, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEFCE8))
 
                             RegisterCell("100", 70, Color.Black, FontWeight.Bold)
                             RegisterCell("%", 70, Color.Black, FontWeight.Bold)
@@ -1395,32 +1638,32 @@ fun Class1To3RegisterTableView(
                                 RegisterCell(student.name, 140, alignLeft = true)
 
                                 // Editable cells: Naney 1
-                                RegisterEditableCell(n1Oral, 80, 10) {
+                                RegisterEditableCell(n1Oral, 80, n1OralMax) {
                                     classMarksMap[student.id] = currentInput.copy(naney1Oral = it)
                                 }
-                                RegisterEditableCell(n1Act, 80, 10) {
+                                RegisterEditableCell(n1Act, 80, n1ActMax) {
                                     classMarksMap[student.id] = currentInput.copy(naney1Activity = it)
                                 }
-                                RegisterEditableCell(n1Wri, 80, 5) {
+                                RegisterEditableCell(n1Wri, 80, n1WriMax) {
                                     classMarksMap[student.id] = currentInput.copy(naney1Written = it)
                                 }
 
                                 // Editable cells: Naney 2
-                                RegisterEditableCell(n2Oral, 80, 10) {
+                                RegisterEditableCell(n2Oral, 80, n2OralMax) {
                                     classMarksMap[student.id] = currentInput.copy(naney2Oral = it)
                                 }
-                                RegisterEditableCell(n2Act, 80, 10) {
+                                RegisterEditableCell(n2Act, 80, n2ActMax) {
                                     classMarksMap[student.id] = currentInput.copy(naney2Activity = it)
                                 }
-                                RegisterEditableCell(n2Wri, 80, 5) {
+                                RegisterEditableCell(n2Wri, 80, n2WriMax) {
                                     classMarksMap[student.id] = currentInput.copy(naney2Written = it)
                                 }
 
                                 // Editable cells: Thiranari
-                                RegisterEditableCell(thOral, 85, 10) {
+                                RegisterEditableCell(thOral, 85, thOralMax) {
                                     classMarksMap[student.id] = currentInput.copy(thiranariOral = it)
                                 }
-                                RegisterEditableCell(thWri, 85, 40) {
+                                RegisterEditableCell(thWri, 85, thWriMax) {
                                     classMarksMap[student.id] = currentInput.copy(thiranariWritten = it)
                                 }
 

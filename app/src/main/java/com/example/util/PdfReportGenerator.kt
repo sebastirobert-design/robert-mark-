@@ -2188,9 +2188,9 @@ object PdfReportGenerator {
         val document = PdfDocument()
 
         val sampleClass = classRecordsMap.keys.firstOrNull() ?: 1
-        val isPrimaryGroup = classRecordsMap.keys.all { it in 1..3 }
+        val isPrimaryGroup = classRecordsMap.keys.all { it in 1..2 }
         val subjects = if (isPrimaryGroup) {
-            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS)
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.EVS)
         } else {
             listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.SCIENCE, Subject.SOCIAL)
         }

@@ -114,9 +114,8 @@ object SampleDataProvider {
                 )
 
                 for (sub in subjects) {
-                    if (student.stdClass in 1..3) {
-                        // Class 1-3 புதிய பாடத்திட்டம்:
-                        // நானே செய்வேன் 1 [25], நானே செய்வேன் 2 [25], திறனறி [50] = 100
+                    if (student.stdClass in 1..2) {
+                        // Class 1 & 2: நானே செய்வேன் 1 [25] + நானே செய்வேன் 2 [25] + திறனறி தேர்வு [50] = 100
                         val n1Oral = 8 + (studentId % 3).toInt()
                         val n1Act = 8 + (studentId % 3).toInt()
                         val n1Wri = 4 + (studentId % 2).toInt()
@@ -151,8 +150,60 @@ object SampleDataProvider {
                                 grade = grade
                             )
                         )
+                    } else if (student.stdClass == 3) {
+                        // Class 3: நானே செய்வேன் 1 [20] + நானே செய்வேன் 2 [20] + திரனறி மதிப்பீடு [60] = 100
+                        val n1Oral = 6 + (studentId % 3).toInt()
+                        val n1Act = 6 + (studentId % 3).toInt()
+                        val n1Wri = 3 + (studentId % 2).toInt()
+                        val n2Oral = 6 + (studentId % 3).toInt()
+                        val n2Act = 6 + (studentId % 3).toInt()
+                        val n2Wri = 3 + (studentId % 2).toInt()
+                        val thOral = 8 + (studentId % 3).toInt()
+                        val thWri = 42 + ((studentId * 2) % 9).toInt()
+                        val tot = n1Oral + n1Act + n1Wri + n2Oral + n2Act + n2Wri + thOral + thWri
+                        val level = if (tot >= 80) "மலர்" else if (tot >= 60) "மொட்டு" else "அரும்பு"
+                        val grade = if (tot >= 80) "A" else if (tot >= 60) "B" else "C"
+
+                        repository.saveMark(
+                            StudentMarks(
+                                studentId = studentId,
+                                term = term,
+                                subjectKey = sub.key,
+                                naney1Oral = n1Oral,
+                                naney1Activity = n1Act,
+                                naney1Written = n1Wri,
+                                naney2Oral = n2Oral,
+                                naney2Activity = n2Act,
+                                naney2Written = n2Wri,
+                                thiranariOral = thOral,
+                                thiranariWritten = thWri,
+                                faA = n1Oral + n1Act + n1Wri,
+                                faB = n2Oral + n2Act + n2Wri,
+                                faTotal = (n1Oral + n1Act + n1Wri) + (n2Oral + n2Act + n2Wri),
+                                sa = thOral + thWri,
+                                total = tot,
+                                learningLevel = level,
+                                grade = grade
+                            )
+                        )
+                    } else if (student.stdClass == 8) {
+                        // Class 8: நேரடி 100 மதிப்பெண் (SA/FA பிரிக்கப்படாமல்)
+                        val mark = 65 + ((studentId * 7 + term * 5) % 31).toInt()
+                        repository.saveMark(
+                            StudentMarks(
+                                studentId = studentId,
+                                term = term,
+                                subjectKey = sub.key,
+                                faA = 0,
+                                faB = 0,
+                                faTotal = 0,
+                                sa = mark,
+                                total = mark,
+                                grade = if (mark >= 81) "A" else if (mark >= 61) "B" else "C"
+                            )
+                        )
                     } else {
-                        // Class 4-8 format: FA (40), SA (60)
+                        // Class 4-7 format: FA (40), SA (60)
                         val fa = 30 + ((studentId + term) % 9).toInt()
                         val sa = 45 + ((studentId * 3 + term) % 15).toInt()
                         val tot = (fa + sa).coerceAtMost(100)

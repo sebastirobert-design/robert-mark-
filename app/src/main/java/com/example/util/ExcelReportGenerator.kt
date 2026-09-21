@@ -419,10 +419,10 @@ object ExcelReportGenerator {
         if (!reportsDir.exists()) reportsDir.mkdirs()
         val file = File(reportsDir, fileName)
 
-        val isPrimaryGroup = classRecordsMap.keys.all { it in 1..3 }
-        val isClass8Group = classRecordsMap.keys.all { it == 8 }
-        val subjects = if (isPrimaryGroup) {
-            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS)
+        val isClass1To2 = classRecordsMap.keys.all { it in 1..2 }
+        val isClass8Group = classRecordsMap.keys.all { it == 8 } || groupTitle.contains("8") || groupTitle.contains("சான்றிதழ்")
+        val subjects = if (isClass1To2) {
+            listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.EVS)
         } else {
             listOf(Subject.TAMIL, Subject.ENGLISH, Subject.MATHS, Subject.SCIENCE, Subject.SOCIAL)
         }

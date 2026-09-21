@@ -334,7 +334,7 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
     ) {
         viewModelScope.launch {
             val marksEntities = marksMap.map { (subject, data) ->
-                if (stdClass in 1..3) {
+                if (stdClass in 1..2) {
                     val n1Oral = data.naney1Oral.coerceIn(0, 10)
                     val n1Act = data.naney1Activity.coerceIn(0, 10)
                     val n1Wri = data.naney1Written.coerceIn(0, 5)
@@ -377,6 +377,49 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
                         learningLevel = level,
                         grade = grade
                     )
+                } else if (stdClass == 3) {
+                    val n1Oral = data.naney1Oral.coerceIn(0, 8)
+                    val n1Act = data.naney1Activity.coerceIn(0, 8)
+                    val n1Wri = data.naney1Written.coerceIn(0, 4)
+                    val n1Tot = n1Oral + n1Act + n1Wri
+
+                    val n2Oral = data.naney2Oral.coerceIn(0, 8)
+                    val n2Act = data.naney2Activity.coerceIn(0, 8)
+                    val n2Wri = data.naney2Written.coerceIn(0, 4)
+                    val n2Tot = n2Oral + n2Act + n2Wri
+
+                    val thOral = data.thiranariOral.coerceIn(0, 10)
+                    val thWri = data.thiranariWritten.coerceIn(0, 50)
+                    val thTot = thOral + thWri
+
+                    val total = (n1Tot + n2Tot + thTot).coerceAtMost(100)
+                    val grade = CceGradeEvaluator.getGradeForClass1To3(total)
+                    val level = when {
+                        total >= 80 -> "மலர்"
+                        total >= 60 -> "மொட்டு"
+                        else -> "அரும்பு"
+                    }
+
+                    StudentMarks(
+                        studentId = studentId,
+                        term = term,
+                        subjectKey = subject.key,
+                        naney1Oral = n1Oral,
+                        naney1Activity = n1Act,
+                        naney1Written = n1Wri,
+                        naney2Oral = n2Oral,
+                        naney2Activity = n2Act,
+                        naney2Written = n2Wri,
+                        thiranariOral = thOral,
+                        thiranariWritten = thWri,
+                        faA = n1Tot,
+                        faB = n2Tot,
+                        faTotal = n1Tot + n2Tot,
+                        sa = thTot,
+                        total = total,
+                        learningLevel = level,
+                        grade = grade
+                    )
                 } else if (stdClass == 8) {
                     // எட்டாம் வகுப்பிற்கு மட்டும் நேரடி 100 மதிப்பெண் (Req 3: வளரறி, தொகுத்தறி என பிரிக்கவேண்டாம்)
                     val total = (if (data.directTotal > 0) data.directTotal else data.sa).coerceIn(0, 100)
@@ -385,6 +428,8 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
                         studentId = studentId,
                         term = term,
                         subjectKey = subject.key,
+                        faA = 0,
+                        faB = 0,
                         faTotal = 0,
                         sa = total,
                         total = total,

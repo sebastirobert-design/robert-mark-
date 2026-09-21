@@ -86,20 +86,20 @@ data class AcademicSection(
 val ACADEMIC_SECTIONS = listOf(
     AcademicSection(
         id = 1,
-        title = "வகுப்பு 1 - 3 (தொடக்கப் பிரிவு)",
-        shortName = "வகுப்பு 1-3",
+        title = "வகுப்பு 1 - 2 (தொடக்கப் பிரிவு)",
+        shortName = "வகுப்பு 1-2",
         categoryName = "தொடக்கப் பிரிவு",
-        description = "தமிழ், ஆங்கிலம், கணிதம் (மொத்தம் 300 மதிப்பெண்கள்)",
-        classes = listOf(1, 2, 3),
-        totalMarks = 300
+        description = "4 பாடங்கள்: தமிழ், ஆங்கிலம், கணிதம், சூழ்நிலையியல் (மொத்தம் 400 மதிப்பெண்கள்)",
+        classes = listOf(1, 2),
+        totalMarks = 400
     ),
     AcademicSection(
         id = 2,
-        title = "வகுப்பு 4 - 5 (தொடக்க மேல்நிலைப் பிரிவு)",
-        shortName = "வகுப்பு 4-5",
+        title = "வகுப்பு 3 - 5 (தொடக்க மேல்நிலைப் பிரிவு)",
+        shortName = "வகுப்பு 3-5",
         categoryName = "தொடக்க மேல்நிலைப் பிரிவு",
-        description = "5 பாடங்கள் (மொத்தம் 500 மதிப்பெண்கள்)",
-        classes = listOf(4, 5),
+        description = "5 பாடங்கள்: தமிழ், ஆங்கிலம், கணிதம், அறிவியல், சமூக அறிவியல் (மொத்தம் 500 மதிப்பெண்கள்)",
+        classes = listOf(3, 4, 5),
         totalMarks = 500
     ),
     AcademicSection(
@@ -116,7 +116,7 @@ val ACADEMIC_SECTIONS = listOf(
         title = "வகுப்பு 8 (சான்றிதழ் பிரிவு)",
         shortName = "வகுப்பு 8",
         categoryName = "சான்றிதழ் பிரிவு",
-        description = "5 பாடங்கள் + உடற்கல்வி தனிக் கணக்கீடு மற்றும் ஆண்டு இறுதி சான்றிதழ்",
+        description = "5 பாடங்கள் (ஒவ்வொரு பாடமும் நேரடி 100 மதிப்பெண்) + உடற்கல்வி மற்றும் ஆண்டு இறுதி சான்றிதழ்",
         classes = listOf(8),
         totalMarks = 500,
         hasPe = true,
@@ -180,7 +180,8 @@ fun ConsolidationScreen(
         Subject.getSubjectsForClass(selectedClass)
     }
 
-    val isPrimary = if (isGroupMode) currentSection.id == 1 else selectedClass in 1..3
+    val isPrimary = if (isGroupMode) currentSection.id == 1 else selectedClass in 1..2
+    val isClass3 = if (isGroupMode) false else selectedClass == 3
 
     Column(
         modifier = modifier
@@ -203,7 +204,7 @@ fun ConsolidationScreen(
                     onClick = { isGroupMode = true },
                     label = {
                         Text(
-                            "முப்பருவப் பிரிவுகள் (1-3, 4-5, 6-7, 8)",
+                            "முப்பருவப் பிரிவுகள் (1-2, 3-5, 6-7, 8)",
                             fontSize = 11.5.sp,
                             fontWeight = if (isGroupMode) FontWeight.Bold else FontWeight.Normal
                         )
@@ -501,6 +502,16 @@ fun ConsolidationScreen(
                                         Toast.makeText(context, "PDF அறிக்கை தயார்", Toast.LENGTH_SHORT).show()
                                         PdfReportGenerator.sharePdfFile(context, file, "${selectedPrimarySubject!!.tamilName} பதிவேடு PDF")
                                     }
+                                } else if (viewModeTab > 0) {
+                                    viewModel.exportCombinedGroupPdf(
+                                        context = context,
+                                        groupTitle = "வகுப்பு $selectedClass (பருவம் $viewModeTab)",
+                                        classes = listOf(selectedClass),
+                                        term = viewModeTab
+                                    ) { file ->
+                                        Toast.makeText(context, "PDF அறிக்கை தயார்", Toast.LENGTH_SHORT).show()
+                                        PdfReportGenerator.sharePdfFile(context, file, "${schoolProfile.schoolName} வகுப்பு $selectedClass பருவம் $viewModeTab பதிவேடு")
+                                    }
                                 } else {
                                     viewModel.exportConsolidatedPdf(context, selectedClass) { file ->
                                         Toast.makeText(context, "PDF அறிக்கை தயார்", Toast.LENGTH_SHORT).show()
@@ -657,7 +668,7 @@ fun ConsolidationScreen(
                 (36 + 54 + 130 + 42 + (5 * 68) + 64 + 68 + 50 + 50 + 80).dp
             } else {
                 (36 + 54 + 130 + 42 +
-                    (mainSubjectsCount * (if (isPrimary && viewModeTab != 0 && selectedPrimarySubject == null) 140 else 105)) +
+                    (mainSubjectsCount * (if ((isPrimary || isClass3) && viewModeTab != 0 && selectedPrimarySubject == null) 140 else 105)) +
                     56 + (if (hasPe) 105 else 0) + 50 + 50 + 80).dp
             }
 
@@ -708,7 +719,7 @@ fun ConsolidationScreen(
 
                                     Spacer(modifier = Modifier.height(6.dp))
 
-                                    Class1To3OfficialHeader()
+                                    Class1To3OfficialHeader(isClass3 = (selectedClass == 3))
 
                                     activeRecords.forEachIndexed { idx, record ->
                                         val sm = record.subjectMarks[selectedPrimarySubject!!]
@@ -771,7 +782,8 @@ fun ConsolidationScreen(
                                         subjects = subjects,
                                         isAverageMode = viewModeTab == 0,
                                         isClass1To3 = isPrimary,
-                                        isClass8 = isClass8
+                                        isClass8 = isClass8,
+                                        isClass3 = isClass3
                                     )
 
                                     if (isGroupMode) {
@@ -786,13 +798,15 @@ fun ConsolidationScreen(
                                                 )
 
                                                 recs.forEach { record ->
+                                                    val rowIsClass8 = record.student.stdClass == 8
+                                                    val rowIsClass1To3 = record.student.stdClass in 1..3
                                                     StudentRow(
                                                         sNo = globalSno++,
                                                         record = record,
                                                         subjects = subjects,
                                                         viewMode = viewModeTab,
-                                                        isClass1To3 = isPrimary,
-                                                        isClass8 = (record.student.stdClass == 8),
+                                                        isClass1To3 = rowIsClass1To3,
+                                                        isClass8 = rowIsClass8,
                                                         onRowClick = {
                                                             selectedRankCardRecord = record
                                                             showRankCardDialog = true
@@ -809,7 +823,7 @@ fun ConsolidationScreen(
                                                 record = record,
                                                 subjects = subjects,
                                                 viewMode = viewModeTab,
-                                                isClass1To3 = isPrimary,
+                                                isClass1To3 = (selectedClass in 1..3),
                                                 isClass8 = isClass8,
                                                 onRowClick = {
                                                     selectedRankCardRecord = record
@@ -918,7 +932,8 @@ fun TableHeader(
     subjects: List<Subject>,
     isAverageMode: Boolean,
     isClass1To3: Boolean,
-    isClass8: Boolean = false
+    isClass8: Boolean = false,
+    isClass3: Boolean = false
 ) {
     val borderColor = Color.LightGray
     val thBg = Color(0xFFEEF2FF)
@@ -946,7 +961,7 @@ fun TableHeader(
                 if (isClass8) {
                     TableCell(text = "${sub.shortName}\n(100)", width = 68.dp, isHeader = true)
                 } else {
-                    val w = if (isClass1To3 && !isAverageMode) 140.dp else 105.dp
+                    val w = if ((isClass1To3 || isClass3) && !isAverageMode) 140.dp else 105.dp
                     TableCell(text = sub.shortName, width = w, isHeader = true)
                 }
             }
@@ -990,10 +1005,13 @@ fun TableHeader(
                 }
             } else {
                 mainSubjects.forEach { _ ->
-                    if (isClass1To3 && !isAverageMode) {
-                        TableCell(text = "FA(a)", width = 35.dp, isSubHeader = true)
-                        TableCell(text = "FA(b)", width = 35.dp, isSubHeader = true)
-                        TableCell(text = "SA", width = 35.dp, isSubHeader = true)
+                    if ((isClass1To3 || isClass3) && !isAverageMode) {
+                        val fa1 = if (isClass3) "FA(20)" else "FA(25)"
+                        val fa2 = if (isClass3) "FA(20)" else "FA(25)"
+                        val sa = if (isClass3) "SA(60)" else "SA(50)"
+                        TableCell(text = fa1, width = 35.dp, isSubHeader = true)
+                        TableCell(text = fa2, width = 35.dp, isSubHeader = true)
+                        TableCell(text = sa, width = 35.dp, isSubHeader = true)
                         TableCell(text = "மொ", width = 35.dp, isSubHeader = true)
                     } else {
                         TableCell(text = "SA", width = 35.dp, isSubHeader = true)
@@ -1211,9 +1229,24 @@ fun TableCell(
 }
 
 @Composable
-fun Class1To3OfficialHeader() {
+fun Class1To3OfficialHeader(isClass3: Boolean = false) {
     val borderColor = Color.LightGray
     val thBg = Color(0xFFEEF2FF)
+
+    val naney1Title = if (isClass3) "நானே செய்வேன் - 1 [20]" else "நானே செய்வேன் - 1 [25]"
+    val naney2Title = if (isClass3) "நானே செய்வேன் - 2 [20]" else "நானே செய்வேன் - 2 [25]"
+    val thiranariTitle = if (isClass3) "திரனறி மதிப்பீடு [60]" else "திறனறி மதிப்பீடு [50]"
+
+    val oral1 = if (isClass3) "வாய்மொழி [8]" else "வாய்மொழி [10]"
+    val act1 = if (isClass3) "செயல்பாடு [8]" else "செயல்பாடு [10]"
+    val wri1 = if (isClass3) "எழுத்து [4]" else "எழுத்து [5]"
+
+    val oral2 = if (isClass3) "வாய்மொழி [8]" else "வாய்மொழி [10]"
+    val act2 = if (isClass3) "செயல்பாடு [8]" else "செயல்பாடு [10]"
+    val wri2 = if (isClass3) "எழுத்து [4]" else "எழுத்து [5]"
+
+    val thOral = if (isClass3) "வாய்மொழி [10]" else "வாய்மொழி [10]"
+    val thWri = if (isClass3) "எழுத்து [50]" else "எழுத்து [40]"
 
     Column(
         modifier = Modifier
@@ -1228,9 +1261,9 @@ fun Class1To3OfficialHeader() {
             TableCell(text = "வ.எண்", width = 36.dp, isHeader = true)
             TableCell(text = "சே.எண்", width = 54.dp, isHeader = true)
             TableCell(text = "மாணவர் பெயர்", width = 130.dp, isHeader = true)
-            TableCell(text = "நானே செய்வேன் - 1 [25]", width = 195.dp, isHeader = true, textColor = Color(0xFF991B1B))
-            TableCell(text = "நானே செய்வேன் - 2 [25]", width = 195.dp, isHeader = true, textColor = Color(0xFF991B1B))
-            TableCell(text = "திறனறி மதிப்பீடு [50]", width = 140.dp, isHeader = true, textColor = Color(0xFF92400E))
+            TableCell(text = naney1Title, width = 195.dp, isHeader = true, textColor = Color(0xFF991B1B))
+            TableCell(text = naney2Title, width = 195.dp, isHeader = true, textColor = Color(0xFF991B1B))
+            TableCell(text = thiranariTitle, width = 140.dp, isHeader = true, textColor = Color(0xFF92400E))
             TableCell(text = "மொத்தம்", width = 56.dp, isHeader = true)
             TableCell(text = "விழுக்காடு", width = 56.dp, isHeader = true)
         }
@@ -1247,18 +1280,18 @@ fun Class1To3OfficialHeader() {
             TableCell(text = "", width = 130.dp)
 
             // Naney 1 sub-columns
-            TableCell(text = "வாய்மொழி [10]", width = 65.dp, isSubHeader = true)
-            TableCell(text = "செயல்பாடு [10]", width = 65.dp, isSubHeader = true)
-            TableCell(text = "எழுத்து [5]", width = 65.dp, isSubHeader = true)
+            TableCell(text = oral1, width = 65.dp, isSubHeader = true)
+            TableCell(text = act1, width = 65.dp, isSubHeader = true)
+            TableCell(text = wri1, width = 65.dp, isSubHeader = true)
 
             // Naney 2 sub-columns
-            TableCell(text = "வாய்மொழி [10]", width = 65.dp, isSubHeader = true)
-            TableCell(text = "செயல்பாடு [10]", width = 65.dp, isSubHeader = true)
-            TableCell(text = "எழுத்து [5]", width = 65.dp, isSubHeader = true)
+            TableCell(text = oral2, width = 65.dp, isSubHeader = true)
+            TableCell(text = act2, width = 65.dp, isSubHeader = true)
+            TableCell(text = wri2, width = 65.dp, isSubHeader = true)
 
             // Thiranari sub-columns
-            TableCell(text = "வாய்மொழி [10]", width = 70.dp, isSubHeader = true)
-            TableCell(text = "எழுத்து [40]", width = 70.dp, isSubHeader = true)
+            TableCell(text = thOral, width = 70.dp, isSubHeader = true)
+            TableCell(text = thWri, width = 70.dp, isSubHeader = true)
 
             TableCell(text = "100", width = 56.dp, isSubHeader = true, isBold = true)
             TableCell(text = "%", width = 56.dp, isSubHeader = true, isBold = true)
