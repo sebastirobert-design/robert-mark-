@@ -650,11 +650,16 @@ fun ConsolidationScreen(
             }
         } else {
             val horizontalScrollState = rememberScrollState()
+            val isClass8 = if (isGroupMode) (currentSection.classes == listOf(8)) else (selectedClass == 8)
             val mainSubjectsCount = subjects.filter { it != Subject.PE }.size
             val hasPe = subjects.contains(Subject.PE)
-            val calculatedTableWidth: Dp = (36 + 54 + 130 + 42 +
+            val calculatedTableWidth: Dp = if (isClass8) {
+                (36 + 54 + 130 + 42 + (5 * 68) + 64 + 68 + 50 + 50 + 80).dp
+            } else {
+                (36 + 54 + 130 + 42 +
                     (mainSubjectsCount * (if (isPrimary && viewModeTab != 0 && selectedPrimarySubject == null) 140 else 105)) +
                     56 + (if (hasPe) 105 else 0) + 50 + 50 + 80).dp
+            }
 
             Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
@@ -765,7 +770,8 @@ fun ConsolidationScreen(
                                     TableHeader(
                                         subjects = subjects,
                                         isAverageMode = viewModeTab == 0,
-                                        isClass1To3 = isPrimary
+                                        isClass1To3 = isPrimary,
+                                        isClass8 = isClass8
                                     )
 
                                     if (isGroupMode) {
@@ -786,6 +792,7 @@ fun ConsolidationScreen(
                                                         subjects = subjects,
                                                         viewMode = viewModeTab,
                                                         isClass1To3 = isPrimary,
+                                                        isClass8 = (record.student.stdClass == 8),
                                                         onRowClick = {
                                                             selectedRankCardRecord = record
                                                             showRankCardDialog = true
@@ -803,6 +810,7 @@ fun ConsolidationScreen(
                                                 subjects = subjects,
                                                 viewMode = viewModeTab,
                                                 isClass1To3 = isPrimary,
+                                                isClass8 = isClass8,
                                                 onRowClick = {
                                                     selectedRankCardRecord = record
                                                     showRankCardDialog = true
@@ -909,7 +917,8 @@ fun ClassDividerTableRow(
 fun TableHeader(
     subjects: List<Subject>,
     isAverageMode: Boolean,
-    isClass1To3: Boolean
+    isClass1To3: Boolean,
+    isClass8: Boolean = false
 ) {
     val borderColor = Color.LightGray
     val thBg = Color(0xFFEEF2FF)
@@ -934,14 +943,22 @@ fun TableHeader(
             TableCell(text = "இனம்", width = 42.dp, isHeader = true)
 
             mainSubjects.forEach { sub ->
-                val w = if (isClass1To3 && !isAverageMode) 140.dp else 105.dp
-                TableCell(text = sub.shortName, width = w, isHeader = true)
+                if (isClass8) {
+                    TableCell(text = "${sub.shortName}\n(100)", width = 68.dp, isHeader = true)
+                } else {
+                    val w = if (isClass1To3 && !isAverageMode) 140.dp else 105.dp
+                    TableCell(text = sub.shortName, width = w, isHeader = true)
+                }
             }
 
-            TableCell(text = "TOTAL\n($maxMarks)", width = 56.dp, isHeader = true)
+            TableCell(text = "TOTAL\n($maxMarks)", width = if (isClass8) 64.dp else 56.dp, isHeader = true)
 
             if (hasPe) {
-                TableCell(text = Subject.PE.shortName, width = 105.dp, isHeader = true)
+                if (isClass8) {
+                    TableCell(text = "உடற்கல்வி\n(100)", width = 68.dp, isHeader = true)
+                } else {
+                    TableCell(text = Subject.PE.shortName, width = 105.dp, isHeader = true)
+                }
             }
 
             TableCell(text = "வேலை\nநாட்கள்", width = 50.dp, isHeader = true)
@@ -949,7 +966,7 @@ fun TableHeader(
             TableCell(text = "தேர்ச்சி விபரம்", width = 80.dp, isHeader = true)
         }
 
-        // Sub-header row for subjects: SA, FA, மொ
+        // Sub-header row for subjects: SA, FA, மொ (for Class 8: direct 100 max mark)
         Row(
             modifier = Modifier
                 .height(24.dp)
@@ -961,25 +978,37 @@ fun TableHeader(
             TableCell(text = "", width = 130.dp)
             TableCell(text = "", width = 42.dp)
 
-            mainSubjects.forEach { _ ->
-                if (isClass1To3 && !isAverageMode) {
-                    TableCell(text = "FA(a)", width = 35.dp, isSubHeader = true)
-                    TableCell(text = "FA(b)", width = 35.dp, isSubHeader = true)
-                    TableCell(text = "SA", width = 35.dp, isSubHeader = true)
-                    TableCell(text = "மொ", width = 35.dp, isSubHeader = true)
-                } else {
+            if (isClass8) {
+                mainSubjects.forEach { _ ->
+                    TableCell(text = "100", width = 68.dp, isSubHeader = true)
+                }
+
+                TableCell(text = "500", width = 64.dp, isSubHeader = true)
+
+                if (hasPe) {
+                    TableCell(text = "100", width = 68.dp, isSubHeader = true)
+                }
+            } else {
+                mainSubjects.forEach { _ ->
+                    if (isClass1To3 && !isAverageMode) {
+                        TableCell(text = "FA(a)", width = 35.dp, isSubHeader = true)
+                        TableCell(text = "FA(b)", width = 35.dp, isSubHeader = true)
+                        TableCell(text = "SA", width = 35.dp, isSubHeader = true)
+                        TableCell(text = "மொ", width = 35.dp, isSubHeader = true)
+                    } else {
+                        TableCell(text = "SA", width = 35.dp, isSubHeader = true)
+                        TableCell(text = "FA", width = 35.dp, isSubHeader = true)
+                        TableCell(text = "மொ", width = 35.dp, isSubHeader = true)
+                    }
+                }
+
+                TableCell(text = "", width = 56.dp)
+
+                if (hasPe) {
                     TableCell(text = "SA", width = 35.dp, isSubHeader = true)
                     TableCell(text = "FA", width = 35.dp, isSubHeader = true)
                     TableCell(text = "மொ", width = 35.dp, isSubHeader = true)
                 }
-            }
-
-            TableCell(text = "", width = 56.dp)
-
-            if (hasPe) {
-                TableCell(text = "SA", width = 35.dp, isSubHeader = true)
-                TableCell(text = "FA", width = 35.dp, isSubHeader = true)
-                TableCell(text = "மொ", width = 35.dp, isSubHeader = true)
             }
 
             TableCell(text = "", width = 50.dp)
@@ -996,6 +1025,7 @@ fun StudentRow(
     subjects: List<Subject>,
     viewMode: Int,
     isClass1To3: Boolean,
+    isClass8: Boolean = false,
     onRowClick: () -> Unit = {}
 ) {
     val mainSubjects = remember(subjects) { subjects.filter { it != Subject.PE } }
@@ -1019,66 +1049,106 @@ fun StudentRow(
 
         var mainTotal = 0
 
-        mainSubjects.forEach { sub ->
-            val sm = record.subjectMarks[sub]
-            if (viewMode == 0) {
-                // Average
-                val sa = sm?.avgSa ?: 0
-                val fa = sm?.avgFa ?: 0
-                val tot = sm?.avgTotal ?: 0
-                mainTotal += tot
-
-                TableCell(text = "$sa", width = 35.dp)
-                TableCell(text = "$fa", width = 35.dp)
-                TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = NavyPrimary)
-            } else {
-                // Single term (1, 2, 3)
-                val m = when (viewMode) {
-                    1 -> sm?.term1Marks
-                    2 -> sm?.term2Marks
-                    3 -> sm?.term3Marks
-                    else -> null
+        if (isClass8) {
+            // 8-ம் வகுப்பு: SA/FA பிரிக்கப்படாமல் ஒவ்வொரு பாடத்திற்கும் நேரடி 100 மதிப்பெண்
+            mainSubjects.forEach { sub ->
+                val sm = record.subjectMarks[sub]
+                val mark = if (viewMode == 0) {
+                    sm?.avgTotal ?: 0
+                } else {
+                    val m = when (viewMode) {
+                        1 -> sm?.term1Marks
+                        2 -> sm?.term2Marks
+                        3 -> sm?.term3Marks
+                        else -> null
+                    }
+                    m?.total ?: 0
                 }
-                val tot = m?.total ?: 0
-                mainTotal += tot
+                mainTotal += mark
+                TableCell(text = "$mark", width = 68.dp, isBold = true, textColor = NavyPrimary)
+            }
 
-                if (isClass1To3) {
-                    TableCell(text = "${m?.faA ?: 0}", width = 35.dp)
-                    TableCell(text = "${m?.faB ?: 0}", width = 35.dp)
-                    TableCell(text = "${m?.sa ?: 0}", width = 35.dp)
+            // TOTAL for main 5 subjects (out of 500)
+            TableCell(text = "$mainTotal", width = 64.dp, isBold = true, textColor = NavyDark)
+
+            // Physical Education (PE) single mark out of 100
+            if (hasPe) {
+                val peSm = record.subjectMarks[Subject.PE]
+                val peMark = if (viewMode == 0) {
+                    peSm?.avgTotal ?: 0
+                } else {
+                    val m = when (viewMode) {
+                        1 -> peSm?.term1Marks
+                        2 -> peSm?.term2Marks
+                        3 -> peSm?.term3Marks
+                        else -> null
+                    }
+                    m?.total ?: 0
+                }
+                TableCell(text = "$peMark", width = 68.dp, isBold = true, textColor = AmberGold)
+            }
+        } else {
+            mainSubjects.forEach { sub ->
+                val sm = record.subjectMarks[sub]
+                if (viewMode == 0) {
+                    // Average
+                    val sa = sm?.avgSa ?: 0
+                    val fa = sm?.avgFa ?: 0
+                    val tot = sm?.avgTotal ?: 0
+                    mainTotal += tot
+
+                    TableCell(text = "$sa", width = 35.dp)
+                    TableCell(text = "$fa", width = 35.dp)
                     TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = NavyPrimary)
                 } else {
-                    TableCell(text = "${m?.sa ?: 0}", width = 35.dp)
-                    TableCell(text = "${m?.faTotal ?: 0}", width = 35.dp)
-                    TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = NavyPrimary)
+                    // Single term (1, 2, 3)
+                    val m = when (viewMode) {
+                        1 -> sm?.term1Marks
+                        2 -> sm?.term2Marks
+                        3 -> sm?.term3Marks
+                        else -> null
+                    }
+                    val tot = m?.total ?: 0
+                    mainTotal += tot
+
+                    if (isClass1To3) {
+                        TableCell(text = "${m?.faA ?: 0}", width = 35.dp)
+                        TableCell(text = "${m?.faB ?: 0}", width = 35.dp)
+                        TableCell(text = "${m?.sa ?: 0}", width = 35.dp)
+                        TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = NavyPrimary)
+                    } else {
+                        TableCell(text = "${m?.sa ?: 0}", width = 35.dp)
+                        TableCell(text = "${m?.faTotal ?: 0}", width = 35.dp)
+                        TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = NavyPrimary)
+                    }
                 }
             }
-        }
 
-        // TOTAL for main subjects only (excluding PE) - out of 300 for 1-3, 500 for others
-        TableCell(text = "$mainTotal", width = 56.dp, isBold = true, textColor = NavyDark)
+            // TOTAL for main subjects only (excluding PE) - out of 300 for 1-3, 500 for others
+            TableCell(text = "$mainTotal", width = 56.dp, isBold = true, textColor = NavyDark)
 
-        // PE marks placed AFTER TOTAL
-        if (hasPe) {
-            val sm = record.subjectMarks[Subject.PE]
-            if (viewMode == 0) {
-                val sa = sm?.avgSa ?: 0
-                val fa = sm?.avgFa ?: 0
-                val tot = sm?.avgTotal ?: 0
-                TableCell(text = "$sa", width = 35.dp)
-                TableCell(text = "$fa", width = 35.dp)
-                TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = AmberGold)
-            } else {
-                val m = when (viewMode) {
-                    1 -> sm?.term1Marks
-                    2 -> sm?.term2Marks
-                    3 -> sm?.term3Marks
-                    else -> null
+            // PE marks placed AFTER TOTAL
+            if (hasPe) {
+                val sm = record.subjectMarks[Subject.PE]
+                if (viewMode == 0) {
+                    val sa = sm?.avgSa ?: 0
+                    val fa = sm?.avgFa ?: 0
+                    val tot = sm?.avgTotal ?: 0
+                    TableCell(text = "$sa", width = 35.dp)
+                    TableCell(text = "$fa", width = 35.dp)
+                    TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = AmberGold)
+                } else {
+                    val m = when (viewMode) {
+                        1 -> sm?.term1Marks
+                        2 -> sm?.term2Marks
+                        3 -> sm?.term3Marks
+                        else -> null
+                    }
+                    val tot = m?.total ?: 0
+                    TableCell(text = "${m?.sa ?: 0}", width = 35.dp)
+                    TableCell(text = "${m?.faTotal ?: 0}", width = 35.dp)
+                    TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = AmberGold)
                 }
-                val tot = m?.total ?: 0
-                TableCell(text = "${m?.sa ?: 0}", width = 35.dp)
-                TableCell(text = "${m?.faTotal ?: 0}", width = 35.dp)
-                TableCell(text = "$tot", width = 35.dp, isBold = true, textColor = AmberGold)
             }
         }
 

@@ -193,42 +193,67 @@ object PdfReportGenerator {
             textAlign = Paint.Align.CENTER
         }
 
-        for (sub in mainSubjects) {
-            canvas.drawText(sub.shortName, curX + subjectW / 2f, tableTop + 12f, headerTextPaint)
-            // sub-headers SA, FA, மொ
-            canvas.drawText("SA", curX + subColW * 0.5f, tableTop + headerH1 + 10f, subTextPaint)
-            canvas.drawText("FA", curX + subColW * 1.5f, tableTop + headerH1 + 10f, subTextPaint)
-            canvas.drawText("மொ", curX + subColW * 2.5f, tableTop + headerH1 + 10f, subTextPaint)
+        val isClass8 = stdClass == 8
 
-            // Horizontal sub-divider line
-            canvas.drawLine(curX, tableTop + headerH1, curX + subjectW, tableTop + headerH1, strokePaint)
+        if (isClass8) {
+            for (sub in mainSubjects) {
+                canvas.drawText(sub.shortName, curX + subjectW / 2f, tableTop + 13f, headerTextPaint)
+                canvas.drawText("(100)", curX + subjectW / 2f, tableTop + headerH1 + 10f, subTextPaint)
+                canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+                curX += subjectW
+            }
 
-            // Vertical sub-divider lines
-            canvas.drawLine(curX + subColW, tableTop + headerH1, curX + subColW, tableTop + headerH1 + headerH2, strokePaint)
-            canvas.drawLine(curX + subColW * 2f, tableTop + headerH1, curX + subColW * 2f, tableTop + headerH1 + headerH2, strokePaint)
-
-            // Vertical line dividing subjects
+            // 2. TOTAL column (Sum of 5 main subjects out of 500)
             canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
-            curX += subjectW
-        }
+            canvas.drawText("TOTAL", curX + 20f, tableTop + 13f, headerTextPaint)
+            canvas.drawText("(500)", curX + 20f, tableTop + headerH1 + 10f, subTextPaint)
+            curX += 40f
 
-        // 2. TOTAL column (Sum of 5 main subjects out of 500)
-        canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
-        canvas.drawText("TOTAL", curX + 20f, tableTop + 20f, headerTextPaint)
-        curX += 40f
+            // 3. Physical Education Column (AFTER TOTAL, separate from academic marks)
+            if (hasPe) {
+                canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+                canvas.drawText(Subject.PE.shortName, curX + subjectW / 2f, tableTop + 13f, headerTextPaint)
+                canvas.drawText("(100)", curX + subjectW / 2f, tableTop + headerH1 + 10f, subTextPaint)
+                curX += subjectW
+            }
+        } else {
+            for (sub in mainSubjects) {
+                canvas.drawText(sub.shortName, curX + subjectW / 2f, tableTop + 12f, headerTextPaint)
+                // sub-headers SA, FA, மொ
+                canvas.drawText("SA", curX + subColW * 0.5f, tableTop + headerH1 + 10f, subTextPaint)
+                canvas.drawText("FA", curX + subColW * 1.5f, tableTop + headerH1 + 10f, subTextPaint)
+                canvas.drawText("மொ", curX + subColW * 2.5f, tableTop + headerH1 + 10f, subTextPaint)
 
-        // 3. Physical Education Column (AFTER TOTAL, separate from academic marks)
-        if (hasPe) {
+                // Horizontal sub-divider line
+                canvas.drawLine(curX, tableTop + headerH1, curX + subjectW, tableTop + headerH1, strokePaint)
+
+                // Vertical sub-divider lines
+                canvas.drawLine(curX + subColW, tableTop + headerH1, curX + subColW, tableTop + headerH1 + headerH2, strokePaint)
+                canvas.drawLine(curX + subColW * 2f, tableTop + headerH1, curX + subColW * 2f, tableTop + headerH1 + headerH2, strokePaint)
+
+                // Vertical line dividing subjects
+                canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+                curX += subjectW
+            }
+
+            // 2. TOTAL column (Sum of 5 main subjects out of 500)
             canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
-            canvas.drawText(Subject.PE.shortName, curX + subjectW / 2f, tableTop + 12f, headerTextPaint)
-            canvas.drawText("SA", curX + subColW * 0.5f, tableTop + headerH1 + 10f, subTextPaint)
-            canvas.drawText("FA", curX + subColW * 1.5f, tableTop + headerH1 + 10f, subTextPaint)
-            canvas.drawText("மொ", curX + subColW * 2.5f, tableTop + headerH1 + 10f, subTextPaint)
+            canvas.drawText("TOTAL", curX + 20f, tableTop + 20f, headerTextPaint)
+            curX += 40f
 
-            canvas.drawLine(curX, tableTop + headerH1, curX + subjectW, tableTop + headerH1, strokePaint)
-            canvas.drawLine(curX + subColW, tableTop + headerH1, curX + subColW, tableTop + headerH1 + headerH2, strokePaint)
-            canvas.drawLine(curX + subColW * 2f, tableTop + headerH1, curX + subColW * 2f, tableTop + headerH1 + headerH2, strokePaint)
-            curX += subjectW
+            // 3. Physical Education Column (AFTER TOTAL, separate from academic marks)
+            if (hasPe) {
+                canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+                canvas.drawText(Subject.PE.shortName, curX + subjectW / 2f, tableTop + 12f, headerTextPaint)
+                canvas.drawText("SA", curX + subColW * 0.5f, tableTop + headerH1 + 10f, subTextPaint)
+                canvas.drawText("FA", curX + subColW * 1.5f, tableTop + headerH1 + 10f, subTextPaint)
+                canvas.drawText("மொ", curX + subColW * 2.5f, tableTop + headerH1 + 10f, subTextPaint)
+
+                canvas.drawLine(curX, tableTop + headerH1, curX + subjectW, tableTop + headerH1, strokePaint)
+                canvas.drawLine(curX + subColW, tableTop + headerH1, curX + subColW, tableTop + headerH1 + headerH2, strokePaint)
+                canvas.drawLine(curX + subColW * 2f, tableTop + headerH1, curX + subColW * 2f, tableTop + headerH1 + headerH2, strokePaint)
+                curX += subjectW
+            }
         }
 
         // 4. End headers: Working Days, Present Days, Result
@@ -278,58 +303,94 @@ object PdfReportGenerator {
 
             canvas.drawText(record.student.community, tableLeft + sNoW + admW + nameW + commW / 2f, rowY + 14f, rowTextPaint)
 
-            // 1. Five Main Academic Subjects data
             var rx = tableLeft + sNoW + admW + nameW + commW
-            for (sub in mainSubjects) {
-                val sm = record.subjectMarks[sub]
-                val saStr = if (sm?.avgSa != null) "${sm.avgSa}" else "-"
-                val faStr = if (sm?.avgFa != null) "${sm.avgFa}" else "-"
-                val totStr = if (sm?.avgTotal != null) "${sm.avgTotal}" else "-"
-
-                canvas.drawText(saStr, rx + subColW * 0.5f, rowY + 14f, rowTextPaint)
-                canvas.drawText(faStr, rx + subColW * 1.5f, rowY + 14f, rowTextPaint)
-
-                // Bold total
-                val boldTextPaint = Paint(rowTextPaint).apply {
-                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            if (isClass8) {
+                // 1. Five Main Academic Subjects data (Single 100 mark column each)
+                for (sub in mainSubjects) {
+                    val sm = record.subjectMarks[sub]
+                    val totStr = if (sm?.avgTotal != null) "${sm.avgTotal}" else "-"
+                    val boldTextPaint = Paint(rowTextPaint).apply {
+                        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    }
+                    canvas.drawText(totStr, rx + subjectW / 2f, rowY + 14f, boldTextPaint)
+                    canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                    rx += subjectW
                 }
-                canvas.drawText(totStr, rx + subColW * 2.5f, rowY + 14f, boldTextPaint)
 
-                // Sub lines
-                canvas.drawLine(rx + subColW, rowY, rx + subColW, rowY + rowH, strokePaint)
-                canvas.drawLine(rx + subColW * 2f, rowY, rx + subColW * 2f, rowY + rowH, strokePaint)
+                // 2. TOTAL column (Sum of 5 main subjects out of 500)
                 canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
-                rx += subjectW
-            }
-
-            // 2. TOTAL column (Calculated only for 5 main subjects)
-            canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
-            val totalPaint = Paint(rowTextPaint).apply {
-                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                color = Color.rgb(30, 58, 138)
-            }
-            canvas.drawText("${record.grandAvgTotal}", rx + 20f, rowY + 14f, totalPaint)
-            rx += 40f
-
-            // 3. Physical Education data (Placed AFTER TOTAL)
-            if (hasPe) {
-                val peSm = record.subjectMarks[Subject.PE]
-                val saStr = if (peSm?.avgSa != null) "${peSm.avgSa}" else "-"
-                val faStr = if (peSm?.avgFa != null) "${peSm.avgFa}" else "-"
-                val totStr = if (peSm?.avgTotal != null) "${peSm.avgTotal}" else "-"
-
-                canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
-                canvas.drawText(saStr, rx + subColW * 0.5f, rowY + 14f, rowTextPaint)
-                canvas.drawText(faStr, rx + subColW * 1.5f, rowY + 14f, rowTextPaint)
-                val pePaint = Paint(rowTextPaint).apply {
+                val totalPaint = Paint(rowTextPaint).apply {
                     typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                    color = Color.rgb(133, 77, 14)
+                    color = Color.rgb(30, 58, 138)
                 }
-                canvas.drawText(totStr, rx + subColW * 2.5f, rowY + 14f, pePaint)
+                canvas.drawText("${record.grandAvgTotal}", rx + 20f, rowY + 14f, totalPaint)
+                rx += 40f
 
-                canvas.drawLine(rx + subColW, rowY, rx + subColW, rowY + rowH, strokePaint)
-                canvas.drawLine(rx + subColW * 2f, rowY, rx + subColW * 2f, rowY + rowH, strokePaint)
-                rx += subjectW
+                // 3. Physical Education data (Single 100 mark column)
+                if (hasPe) {
+                    val peSm = record.subjectMarks[Subject.PE]
+                    val totStr = if (peSm?.avgTotal != null) "${peSm.avgTotal}" else "-"
+                    canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                    val pePaint = Paint(rowTextPaint).apply {
+                        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                        color = Color.rgb(133, 77, 14)
+                    }
+                    canvas.drawText(totStr, rx + subjectW / 2f, rowY + 14f, pePaint)
+                    rx += subjectW
+                }
+            } else {
+                // 1. Five Main Academic Subjects data
+                for (sub in mainSubjects) {
+                    val sm = record.subjectMarks[sub]
+                    val saStr = if (sm?.avgSa != null) "${sm.avgSa}" else "-"
+                    val faStr = if (sm?.avgFa != null) "${sm.avgFa}" else "-"
+                    val totStr = if (sm?.avgTotal != null) "${sm.avgTotal}" else "-"
+
+                    canvas.drawText(saStr, rx + subColW * 0.5f, rowY + 14f, rowTextPaint)
+                    canvas.drawText(faStr, rx + subColW * 1.5f, rowY + 14f, rowTextPaint)
+
+                    // Bold total
+                    val boldTextPaint = Paint(rowTextPaint).apply {
+                        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    }
+                    canvas.drawText(totStr, rx + subColW * 2.5f, rowY + 14f, boldTextPaint)
+
+                    // Sub lines
+                    canvas.drawLine(rx + subColW, rowY, rx + subColW, rowY + rowH, strokePaint)
+                    canvas.drawLine(rx + subColW * 2f, rowY, rx + subColW * 2f, rowY + rowH, strokePaint)
+                    canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                    rx += subjectW
+                }
+
+                // 2. TOTAL column (Calculated only for 5 main subjects)
+                canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                val totalPaint = Paint(rowTextPaint).apply {
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    color = Color.rgb(30, 58, 138)
+                }
+                canvas.drawText("${record.grandAvgTotal}", rx + 20f, rowY + 14f, totalPaint)
+                rx += 40f
+
+                // 3. Physical Education data (Placed AFTER TOTAL)
+                if (hasPe) {
+                    val peSm = record.subjectMarks[Subject.PE]
+                    val saStr = if (peSm?.avgSa != null) "${peSm.avgSa}" else "-"
+                    val faStr = if (peSm?.avgFa != null) "${peSm.avgFa}" else "-"
+                    val totStr = if (peSm?.avgTotal != null) "${peSm.avgTotal}" else "-"
+
+                    canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                    canvas.drawText(saStr, rx + subColW * 0.5f, rowY + 14f, rowTextPaint)
+                    canvas.drawText(faStr, rx + subColW * 1.5f, rowY + 14f, rowTextPaint)
+                    val pePaint = Paint(rowTextPaint).apply {
+                        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                        color = Color.rgb(133, 77, 14)
+                    }
+                    canvas.drawText(totStr, rx + subColW * 2.5f, rowY + 14f, pePaint)
+
+                    canvas.drawLine(rx + subColW, rowY, rx + subColW, rowY + rowH, strokePaint)
+                    canvas.drawLine(rx + subColW * 2f, rowY, rx + subColW * 2f, rowY + rowH, strokePaint)
+                    rx += subjectW
+                }
             }
 
             // 4. End columns: Working Days, Present Days, Result Status
@@ -2278,17 +2339,28 @@ object PdfReportGenerator {
             textAlign = Paint.Align.CENTER
         }
 
-        for (sub in subjects) {
-            canvas.drawText(sub.shortName, curX + subjectW / 2f, tableTop + 12f, headerTextPaint)
-            canvas.drawText("SA", curX + subColW * 0.5f, tableTop + headerH1 + 10f, subTextPaint)
-            canvas.drawText("FA", curX + subColW * 1.5f, tableTop + headerH1 + 10f, subTextPaint)
-            canvas.drawText("மொ", curX + subColW * 2.5f, tableTop + headerH1 + 10f, subTextPaint)
+        val isClass8Group = groupTitle.contains("8") || groupTitle.contains("சான்றிதழ்")
 
-            canvas.drawLine(curX, tableTop + headerH1, curX + subjectW, tableTop + headerH1, strokePaint)
-            canvas.drawLine(curX + subColW, tableTop + headerH1, curX + subColW, tableTop + headerH1 + headerH2, strokePaint)
-            canvas.drawLine(curX + subColW * 2f, tableTop + headerH1, curX + subColW * 2f, tableTop + headerH1 + headerH2, strokePaint)
-            canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
-            curX += subjectW
+        if (isClass8Group) {
+            for (sub in subjects) {
+                canvas.drawText(sub.shortName, curX + subjectW / 2f, tableTop + 13f, headerTextPaint)
+                canvas.drawText("(100)", curX + subjectW / 2f, tableTop + headerH1 + 10f, subTextPaint)
+                canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+                curX += subjectW
+            }
+        } else {
+            for (sub in subjects) {
+                canvas.drawText(sub.shortName, curX + subjectW / 2f, tableTop + 12f, headerTextPaint)
+                canvas.drawText("SA", curX + subColW * 0.5f, tableTop + headerH1 + 10f, subTextPaint)
+                canvas.drawText("FA", curX + subColW * 1.5f, tableTop + headerH1 + 10f, subTextPaint)
+                canvas.drawText("மொ", curX + subColW * 2.5f, tableTop + headerH1 + 10f, subTextPaint)
+
+                canvas.drawLine(curX, tableTop + headerH1, curX + subjectW, tableTop + headerH1, strokePaint)
+                canvas.drawLine(curX + subColW, tableTop + headerH1, curX + subColW, tableTop + headerH1 + headerH2, strokePaint)
+                canvas.drawLine(curX + subColW * 2f, tableTop + headerH1, curX + subColW * 2f, tableTop + headerH1 + headerH2, strokePaint)
+                canvas.drawLine(curX, tableTop, curX, tableTop + headerH1 + headerH2, strokePaint)
+                curX += subjectW
+            }
         }
 
         val maxAcademicTotal = subjects.size * 100
@@ -2379,37 +2451,58 @@ object PdfReportGenerator {
                 canvas.drawText(record.student.community, tableLeft + sNoW + clsW + admW + nameW + commW / 2f, rowY + 14f, rowTextPaint)
 
                 var rx = tableLeft + sNoW + clsW + admW + nameW + commW
-                for (sub in subjects) {
-                    val sm = record.subjectMarks[sub]
-                    val (saStr, faStr, totStr) = if (term == 0) {
-                        Triple(
-                            if (sm?.avgSa != null) "${sm.avgSa}" else "-",
-                            if (sm?.avgFa != null) "${sm.avgFa}" else "-",
+                if (isClass8Group) {
+                    for (sub in subjects) {
+                        val sm = record.subjectMarks[sub]
+                        val totStr = if (term == 0) {
                             if (sm?.avgTotal != null) "${sm.avgTotal}" else "-"
-                        )
-                    } else {
-                        val tm = when (term) {
-                            1 -> sm?.term1Marks
-                            2 -> sm?.term2Marks
-                            3 -> sm?.term3Marks
-                            else -> null
-                        }
-                        Triple(
-                            if (tm?.sa != null) "${tm.sa}" else "-",
-                            if (tm?.faTotal != null) "${tm.faTotal}" else "-",
+                        } else {
+                            val tm = when (term) {
+                                1 -> sm?.term1Marks
+                                2 -> sm?.term2Marks
+                                3 -> sm?.term3Marks
+                                else -> null
+                            }
                             if (tm?.total != null) "${tm.total}" else "-"
-                        )
+                        }
+                        val boldTextPaint = Paint(rowTextPaint).apply { typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) }
+                        canvas.drawText(totStr, rx + subjectW / 2f, rowY + 14f, boldTextPaint)
+                        canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                        rx += subjectW
                     }
+                } else {
+                    for (sub in subjects) {
+                        val sm = record.subjectMarks[sub]
+                        val (saStr, faStr, totStr) = if (term == 0) {
+                            Triple(
+                                if (sm?.avgSa != null) "${sm.avgSa}" else "-",
+                                if (sm?.avgFa != null) "${sm.avgFa}" else "-",
+                                if (sm?.avgTotal != null) "${sm.avgTotal}" else "-"
+                            )
+                        } else {
+                            val tm = when (term) {
+                                1 -> sm?.term1Marks
+                                2 -> sm?.term2Marks
+                                3 -> sm?.term3Marks
+                                else -> null
+                            }
+                            Triple(
+                                if (tm?.sa != null) "${tm.sa}" else "-",
+                                if (tm?.faTotal != null) "${tm.faTotal}" else "-",
+                                if (tm?.total != null) "${tm.total}" else "-"
+                            )
+                        }
 
-                    canvas.drawText(saStr, rx + subColW * 0.5f, rowY + 14f, rowTextPaint)
-                    canvas.drawText(faStr, rx + subColW * 1.5f, rowY + 14f, rowTextPaint)
-                    val boldTextPaint = Paint(rowTextPaint).apply { typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) }
-                    canvas.drawText(totStr, rx + subColW * 2.5f, rowY + 14f, boldTextPaint)
+                        canvas.drawText(saStr, rx + subColW * 0.5f, rowY + 14f, rowTextPaint)
+                        canvas.drawText(faStr, rx + subColW * 1.5f, rowY + 14f, rowTextPaint)
+                        val boldTextPaint = Paint(rowTextPaint).apply { typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) }
+                        canvas.drawText(totStr, rx + subColW * 2.5f, rowY + 14f, boldTextPaint)
 
-                    canvas.drawLine(rx + subColW, rowY, rx + subColW, rowY + rowH, strokePaint)
-                    canvas.drawLine(rx + subColW * 2f, rowY, rx + subColW * 2f, rowY + rowH, strokePaint)
-                    canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
-                    rx += subjectW
+                        canvas.drawLine(rx + subColW, rowY, rx + subColW, rowY + rowH, strokePaint)
+                        canvas.drawLine(rx + subColW * 2f, rowY, rx + subColW * 2f, rowY + rowH, strokePaint)
+                        canvas.drawLine(rx, rowY, rx, rowY + rowH, strokePaint)
+                        rx += subjectW
+                    }
                 }
 
                 // Total column

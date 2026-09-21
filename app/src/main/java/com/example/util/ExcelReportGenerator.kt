@@ -45,66 +45,109 @@ object ExcelReportGenerator {
                 writer.appendLine("\"வகுப்பு: $stdClass\",\"கல்வியாண்டு: ${school.academicYear}\"")
                 writer.appendLine("")
 
-                // Multi-row header for columns
-                // Row 1: Subject groupings
-                val row1 = StringBuilder("\"வ.எண்\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"வகுப்பு\",\"இனம்\"")
-                for (sub in mainSubjects) {
-                    row1.append(",\"${sub.tamilName}\",\"\",\"\"")
-                }
-                row1.append(",\"மொத்தம் (TOTAL 500)\"")
-                if (hasPe) {
-                    row1.append(",\"${Subject.PE.tamilName} (தனி மதிப்பீடு)\",\"\",\"\"")
-                }
-                row1.append(",\"பள்ளி வேலை நாட்கள்\",\"வருகை நாட்கள்\",\"தேர்ச்சி விபரம்\"")
-                writer.appendLine(row1.toString())
-
-                // Row 2: Sub-columns (SA, FA, மொ)
-                val row2 = StringBuilder("\"\",\"\",\"\",\"\",\"\"")
-                for (sub in mainSubjects) {
-                    row2.append(",\"SA (60)\",\"FA (40)\",\"மொத்தம் (100)\"")
-                }
-                row2.append(",\"\"")
-                if (hasPe) {
-                    row2.append(",\"SA (60)\",\"FA (40)\",\"மொத்தம் (100)\"")
-                }
-                row2.append(",\"\",\"\",\"\"")
-                writer.appendLine(row2.toString())
-
-                // Student data rows
-                records.forEachIndexed { index, record ->
-                    val row = StringBuilder()
-                    row.append("\"${index + 1}\",")
-                    row.append("\"${record.student.admissionNo}\",")
-                    row.append("\"${record.student.name}\",")
-                    row.append("\"${record.student.stdClass} - ${record.student.section}\",")
-                    row.append("\"${record.student.community}\"")
-
-                    // 1. Five Main Academic Subjects
+                if (stdClass == 8) {
+                    // Class 8: Single direct 100-mark column per subject (no SA/FA split)
+                    val row1 = StringBuilder("\"வ.எண்\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"வகுப்பு\",\"இனம்\"")
                     for (sub in mainSubjects) {
-                        val subMarks = record.subjectMarks[sub]
-                        val sa = subMarks?.avgSa ?: 0
-                        val fa = subMarks?.avgFa ?: 0
-                        val tot = subMarks?.avgTotal ?: 0
-                        row.append(",\"$sa\",\"$fa\",\"$tot\"")
+                        row1.append(",\"${sub.tamilName} (100)\"")
                     }
-
-                    // 2. TOTAL (5 main subjects only out of 500)
-                    row.append(",\"${record.grandAvgTotal}\"")
-
-                    // 3. Physical Education (PE) placed AFTER TOTAL
+                    row1.append(",\"மொத்தம் (TOTAL 500)\"")
                     if (hasPe) {
-                        val peMarks = record.subjectMarks[Subject.PE]
-                        val sa = peMarks?.avgSa ?: 0
-                        val fa = peMarks?.avgFa ?: 0
-                        val tot = peMarks?.avgTotal ?: 0
-                        row.append(",\"$sa\",\"$fa\",\"$tot\"")
+                        row1.append(",\"${Subject.PE.tamilName} (100) - தனி மதிப்பீடு\"")
                     }
+                    row1.append(",\"பள்ளி வேலை நாட்கள்\",\"வருகை நாட்கள்\",\"தேர்ச்சி விபரம்\"")
+                    writer.appendLine(row1.toString())
 
-                    row.append(",\"${record.totalWorkingDays}\"")
-                    row.append(",\"${record.totalPresentDays}\"")
-                    row.append(",\"${record.resultStatus}\"")
+                    records.forEachIndexed { index, record ->
+                        val row = StringBuilder()
+                        row.append("\"${index + 1}\",")
+                        row.append("\"${record.student.admissionNo}\",")
+                        row.append("\"${record.student.name}\",")
+                        row.append("\"${record.student.stdClass} - ${record.student.section}\",")
+                        row.append("\"${record.student.community}\"")
 
-                    writer.appendLine(row.toString())
+                        for (sub in mainSubjects) {
+                            val subMarks = record.subjectMarks[sub]
+                            val tot = subMarks?.avgTotal ?: 0
+                            row.append(",\"$tot\"")
+                        }
+
+                        row.append(",\"${record.grandAvgTotal}\"")
+
+                        if (hasPe) {
+                            val peMarks = record.subjectMarks[Subject.PE]
+                            val peTot = peMarks?.avgTotal ?: 0
+                            row.append(",\"$peTot\"")
+                        }
+
+                        row.append(",\"${record.totalWorkingDays}\"")
+                        row.append(",\"${record.totalPresentDays}\"")
+                        row.append(",\"${record.resultStatus}\"")
+
+                        writer.appendLine(row.toString())
+                    }
+                } else {
+                    // Multi-row header for columns (Class 1-7)
+                    // Row 1: Subject groupings
+                    val row1 = StringBuilder("\"வ.எண்\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"வகுப்பு\",\"இனம்\"")
+                    for (sub in mainSubjects) {
+                        row1.append(",\"${sub.tamilName}\",\"\",\"\"")
+                    }
+                    row1.append(",\"மொத்தம் (TOTAL 500)\"")
+                    if (hasPe) {
+                        row1.append(",\"${Subject.PE.tamilName} (தனி மதிப்பீடு)\",\"\",\"\"")
+                    }
+                    row1.append(",\"பள்ளி வேலை நாட்கள்\",\"வருகை நாட்கள்\",\"தேர்ச்சி விபரம்\"")
+                    writer.appendLine(row1.toString())
+
+                    // Row 2: Sub-columns (SA, FA, மொ)
+                    val row2 = StringBuilder("\"\",\"\",\"\",\"\",\"\"")
+                    for (sub in mainSubjects) {
+                        row2.append(",\"SA (60)\",\"FA (40)\",\"மொத்தம் (100)\"")
+                    }
+                    row2.append(",\"\"")
+                    if (hasPe) {
+                        row2.append(",\"SA (60)\",\"FA (40)\",\"மொத்தம் (100)\"")
+                    }
+                    row2.append(",\"\",\"\",\"\"")
+                    writer.appendLine(row2.toString())
+
+                    // Student data rows
+                    records.forEachIndexed { index, record ->
+                        val row = StringBuilder()
+                        row.append("\"${index + 1}\",")
+                        row.append("\"${record.student.admissionNo}\",")
+                        row.append("\"${record.student.name}\",")
+                        row.append("\"${record.student.stdClass} - ${record.student.section}\",")
+                        row.append("\"${record.student.community}\"")
+
+                        // 1. Five Main Academic Subjects
+                        for (sub in mainSubjects) {
+                            val subMarks = record.subjectMarks[sub]
+                            val sa = subMarks?.avgSa ?: 0
+                            val fa = subMarks?.avgFa ?: 0
+                            val tot = subMarks?.avgTotal ?: 0
+                            row.append(",\"$sa\",\"$fa\",\"$tot\"")
+                        }
+
+                        // 2. TOTAL (5 main subjects only out of 500)
+                        row.append(",\"${record.grandAvgTotal}\"")
+
+                        // 3. Physical Education (PE) placed AFTER TOTAL
+                        if (hasPe) {
+                            val peMarks = record.subjectMarks[Subject.PE]
+                            val sa = peMarks?.avgSa ?: 0
+                            val fa = peMarks?.avgFa ?: 0
+                            val tot = peMarks?.avgTotal ?: 0
+                            row.append(",\"$sa\",\"$fa\",\"$tot\"")
+                        }
+
+                        row.append(",\"${record.totalWorkingDays}\"")
+                        row.append(",\"${record.totalPresentDays}\"")
+                        row.append(",\"${record.resultStatus}\"")
+
+                        writer.appendLine(row.toString())
+                    }
                 }
 
                 writer.appendLine("")
@@ -144,72 +187,137 @@ object ExcelReportGenerator {
                 writer.appendLine("\"வகுப்பு: $stdClass\",\"கல்வியாண்டு: ${school.academicYear}\"")
                 writer.appendLine("")
 
-                val header = StringBuilder("\"வ.எண்\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"வகுப்பு\",\"இனம்\"")
-                for (sub in mainSubjects) {
-                    if (stdClass in 1..3) {
-                        header.append(",\"${sub.tamilName} FA(a)\",\"${sub.tamilName} FA(b)\",\"${sub.tamilName} SA\",\"${sub.tamilName} மொ\"")
-                    } else {
-                        header.append(",\"${sub.tamilName} FA\",\"${sub.tamilName} SA\",\"${sub.tamilName} மொத்தம்\"")
-                    }
-                }
-                header.append(",\"மொத்தம் (TOTAL)\"")
-                if (hasPe) {
-                    header.append(",\"${Subject.PE.tamilName} FA\",\"${Subject.PE.tamilName} SA\",\"${Subject.PE.tamilName} மொத்தம்\"")
-                }
-                header.append(",\"பள்ளி வேலை நாட்கள்\",\"வருகை நாட்கள்\"")
-                writer.appendLine(header.toString())
-
-                records.forEachIndexed { index, record ->
-                    val row = StringBuilder()
-                    row.append("\"${index + 1}\",")
-                    row.append("\"${record.student.admissionNo}\",")
-                    row.append("\"${record.student.name}\",")
-                    row.append("\"${record.student.stdClass} - ${record.student.section}\",")
-                    row.append("\"${record.student.community}\"")
-
-                    // 1. Five Main Academic Subjects
+                if (stdClass == 8) {
+                    val header = StringBuilder("\"வ.எண்\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"வகுப்பு\",\"இனம்\"")
                     for (sub in mainSubjects) {
-                        val subMarks = record.subjectMarks[sub]
-                        val m = when (term) {
-                            1 -> subMarks?.term1Marks
-                            2 -> subMarks?.term2Marks
-                            3 -> subMarks?.term3Marks
+                        header.append(",\"${sub.tamilName} (100)\"")
+                    }
+                    header.append(",\"மொத்தம் (TOTAL 500)\"")
+                    if (hasPe) {
+                        header.append(",\"${Subject.PE.tamilName} (100) - தனி மதிப்பீடு\"")
+                    }
+                    header.append(",\"பள்ளி வேலை நாட்கள்\",\"வருகை நாட்கள்\",\"தேர்ச்சி விபரம்\"")
+                    writer.appendLine(header.toString())
+
+                    records.forEachIndexed { index, record ->
+                        val row = StringBuilder()
+                        row.append("\"${index + 1}\",")
+                        row.append("\"${record.student.admissionNo}\",")
+                        row.append("\"${record.student.name}\",")
+                        row.append("\"${record.student.stdClass} - ${record.student.section}\",")
+                        row.append("\"${record.student.community}\"")
+
+                        var termTotal = 0
+                        for (sub in mainSubjects) {
+                            val subMarks = record.subjectMarks[sub]
+                            val m = when (term) {
+                                1 -> subMarks?.term1Marks
+                                2 -> subMarks?.term2Marks
+                                3 -> subMarks?.term3Marks
+                                else -> null
+                            }
+                            val tot = m?.total ?: 0
+                            termTotal += tot
+                            row.append(",\"$tot\"")
+                        }
+
+                        row.append(",\"$termTotal\"")
+
+                        if (hasPe) {
+                            val peMarks = record.subjectMarks[Subject.PE]
+                            val m = when (term) {
+                                1 -> peMarks?.term1Marks
+                                2 -> peMarks?.term2Marks
+                                3 -> peMarks?.term3Marks
+                                else -> null
+                            }
+                            val tot = m?.total ?: 0
+                            row.append(",\"$tot\"")
+                        }
+
+                        val att = when (term) {
+                            1 -> record.term1Attendance
+                            2 -> record.term2Attendance
+                            3 -> record.term3Attendance
                             else -> null
                         }
+                        val isPass = termTotal >= (500 * 0.35)
+                        val res = if (isPass) "தேர்ச்சி" else "பயிற்சி தேவை"
+
+                        row.append(",\"${att?.totalWorkingDays ?: 0}\"")
+                        row.append(",\"${att?.presentDays ?: 0}\"")
+                        row.append(",\"$res\"")
+
+                        writer.appendLine(row.toString())
+                    }
+                } else {
+                    val header = StringBuilder("\"வ.எண்\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"வகுப்பு\",\"இனம்\"")
+                    for (sub in mainSubjects) {
                         if (stdClass in 1..3) {
-                            row.append(",\"${m?.faA ?: 0}\",\"${m?.faB ?: 0}\",\"${m?.sa ?: 0}\",\"${m?.total ?: 0}\"")
+                            header.append(",\"${sub.tamilName} FA(a)\",\"${sub.tamilName} FA(b)\",\"${sub.tamilName} SA\",\"${sub.tamilName} மொ\"")
                         } else {
+                            header.append(",\"${sub.tamilName} FA\",\"${sub.tamilName} SA\",\"${sub.tamilName} மொத்தம்\"")
+                        }
+                    }
+                    header.append(",\"மொத்தம் (TOTAL)\"")
+                    if (hasPe) {
+                        header.append(",\"${Subject.PE.tamilName} FA\",\"${Subject.PE.tamilName} SA\",\"${Subject.PE.tamilName} மொத்தம்\"")
+                    }
+                    header.append(",\"பள்ளி வேலை நாட்கள்\",\"வருகை நாட்கள்\"")
+                    writer.appendLine(header.toString())
+
+                    records.forEachIndexed { index, record ->
+                        val row = StringBuilder()
+                        row.append("\"${index + 1}\",")
+                        row.append("\"${record.student.admissionNo}\",")
+                        row.append("\"${record.student.name}\",")
+                        row.append("\"${record.student.stdClass} - ${record.student.section}\",")
+                        row.append("\"${record.student.community}\"")
+
+                        // 1. Five Main Academic Subjects
+                        for (sub in mainSubjects) {
+                            val subMarks = record.subjectMarks[sub]
+                            val m = when (term) {
+                                1 -> subMarks?.term1Marks
+                                2 -> subMarks?.term2Marks
+                                3 -> subMarks?.term3Marks
+                                else -> null
+                            }
+                            if (stdClass in 1..3) {
+                                row.append(",\"${m?.faA ?: 0}\",\"${m?.faB ?: 0}\",\"${m?.sa ?: 0}\",\"${m?.total ?: 0}\"")
+                            } else {
+                                row.append(",\"${m?.faTotal ?: 0}\",\"${m?.sa ?: 0}\",\"${m?.total ?: 0}\"")
+                            }
+                        }
+
+                        // 2. TOTAL (5 main subjects only)
+                        val termTotal = record.getTermTotal(term)
+                        row.append(",\"$termTotal\"")
+
+                        // 3. Physical Education placed AFTER TOTAL
+                        if (hasPe) {
+                            val peMarks = record.subjectMarks[Subject.PE]
+                            val m = when (term) {
+                                1 -> peMarks?.term1Marks
+                                2 -> peMarks?.term2Marks
+                                3 -> peMarks?.term3Marks
+                                else -> null
+                            }
                             row.append(",\"${m?.faTotal ?: 0}\",\"${m?.sa ?: 0}\",\"${m?.total ?: 0}\"")
                         }
-                    }
 
-                    // 2. TOTAL (5 main subjects only)
-                    val termTotal = record.getTermTotal(term)
-                    row.append(",\"$termTotal\"")
-
-                    // 3. Physical Education placed AFTER TOTAL
-                    if (hasPe) {
-                        val peMarks = record.subjectMarks[Subject.PE]
-                        val m = when (term) {
-                            1 -> peMarks?.term1Marks
-                            2 -> peMarks?.term2Marks
-                            3 -> peMarks?.term3Marks
+                        val att = when (term) {
+                            1 -> record.term1Attendance
+                            2 -> record.term2Attendance
+                            3 -> record.term3Attendance
                             else -> null
                         }
-                        row.append(",\"${m?.faTotal ?: 0}\",\"${m?.sa ?: 0}\",\"${m?.total ?: 0}\"")
+
+                        row.append(",\"${att?.totalWorkingDays ?: 0}\"")
+                        row.append(",\"${att?.presentDays ?: 0}\"")
+
+                        writer.appendLine(row.toString())
                     }
-
-                    val att = when (term) {
-                        1 -> record.term1Attendance
-                        2 -> record.term2Attendance
-                        3 -> record.term3Attendance
-                        else -> null
-                    }
-
-                    row.append(",\"${att?.totalWorkingDays ?: 0}\"")
-                    row.append(",\"${att?.presentDays ?: 0}\"")
-
-                    writer.appendLine(row.toString())
                 }
             }
         }
@@ -332,76 +440,63 @@ object ExcelReportGenerator {
                 writer.appendLine("\"கல்வியாண்டு: ${school.academicYear}\"")
                 writer.appendLine("")
 
-                val row1 = StringBuilder("\"வ.எண்\",\"வகுப்பு\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"இனம்\"")
-                for (sub in subjects) {
-                    row1.append(",\"${sub.tamilName}\",\"\",\"\"")
-                }
-                row1.append(",\"மொத்தம் ($maxTotal)\"")
                 if (isClass8Group) {
-                    row1.append(",\"உடற்கல்வி (தனி)\",\"\",\"\"")
-                }
-                row1.append(",\"பள்ளி நாட்கள்\",\"வருகை\",\"சராசரி %\"")
-                writer.appendLine(row1.toString())
+                    val row1 = StringBuilder("\"வ.எண்\",\"வகுப்பு\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"இனம்\"")
+                    for (sub in subjects) {
+                        row1.append(",\"${sub.tamilName} (100)\"")
+                    }
+                    row1.append(",\"மொத்தம் ($maxTotal)\"")
+                    row1.append(",\"${Subject.PE.tamilName} (100) - தனி மதிப்பீடு\"")
+                    row1.append(",\"பள்ளி நாட்கள்\",\"வருகை\",\"சராசரி %\"")
+                    writer.appendLine(row1.toString())
 
-                val row2 = StringBuilder("\"\",\"\",\"\",\"\",\"\"")
-                for (sub in subjects) {
-                    row2.append(",\"SA\",\"FA\",\"மொ\"")
-                }
-                row2.append(",\"\"")
-                if (isClass8Group) {
-                    row2.append(",\"SA\",\"FA\",\"மொ\"")
-                }
-                row2.append(",\"\",\"\",\"\"")
-                writer.appendLine(row2.toString())
+                    var sNoCounter = 1
+                    classRecordsMap.toSortedMap().forEach { (cls, recs) ->
+                        if (recs.isNotEmpty()) {
+                            writer.appendLine("\"--- வகுப்பு $cls (CLASS $cls) - ${recs.size} மாணவர்கள் ---\"")
+                            recs.forEach { record ->
+                                val row = StringBuilder()
+                                row.append("\"${sNoCounter++}\",")
+                                row.append("\"$cls\",")
+                                row.append("\"${record.student.admissionNo}\",")
+                                row.append("\"${record.student.name}\",")
+                                row.append("\"${record.student.community}\"")
 
-                var sNoCounter = 1
-                classRecordsMap.toSortedMap().forEach { (cls, recs) ->
-                    if (recs.isNotEmpty()) {
-                        writer.appendLine("\"--- வகுப்பு $cls (CLASS $cls) - ${recs.size} மாணவர்கள் ---\"")
-                        recs.forEach { record ->
-                            val row = StringBuilder()
-                            row.append("\"${sNoCounter++}\",")
-                            row.append("\"$cls\",")
-                            row.append("\"${record.student.admissionNo}\",")
-                            row.append("\"${record.student.name}\",")
-                            row.append("\"${record.student.community}\"")
-
-                            for (sub in subjects) {
-                                val sm = record.subjectMarks[sub]
-                                val (sa, fa, tot) = if (term == 0) {
-                                    Triple(sm?.avgSa ?: 0, sm?.avgFa ?: 0, sm?.avgTotal ?: 0)
-                                } else {
-                                    val tm = when (term) {
-                                        1 -> sm?.term1Marks
-                                        2 -> sm?.term2Marks
-                                        3 -> sm?.term3Marks
-                                        else -> null
-                                    }
-                                    Triple(tm?.sa ?: 0, tm?.faTotal ?: 0, tm?.total ?: 0)
-                                }
-                                row.append(",\"$sa\",\"$fa\",\"$tot\"")
-                            }
-
-                            val totalMark = if (term == 0) {
-                                subjects.sumOf { sub -> record.subjectMarks[sub]?.avgTotal ?: 0 }
-                            } else {
-                                subjects.sumOf { sub ->
+                                for (sub in subjects) {
                                     val sm = record.subjectMarks[sub]
-                                    val tm = when (term) {
-                                        1 -> sm?.term1Marks
-                                        2 -> sm?.term2Marks
-                                        3 -> sm?.term3Marks
-                                        else -> null
+                                    val tot = if (term == 0) {
+                                        sm?.avgTotal ?: 0
+                                    } else {
+                                        val tm = when (term) {
+                                            1 -> sm?.term1Marks
+                                            2 -> sm?.term2Marks
+                                            3 -> sm?.term3Marks
+                                            else -> null
+                                        }
+                                        tm?.total ?: 0
                                     }
-                                    tm?.total ?: 0
+                                    row.append(",\"$tot\"")
                                 }
-                            }
-                            row.append(",\"$totalMark\"")
 
-                            if (isClass8Group) {
+                                val totalMark = if (term == 0) {
+                                    subjects.sumOf { sub -> record.subjectMarks[sub]?.avgTotal ?: 0 }
+                                } else {
+                                    subjects.sumOf { sub ->
+                                        val sm = record.subjectMarks[sub]
+                                        val tm = when (term) {
+                                            1 -> sm?.term1Marks
+                                            2 -> sm?.term2Marks
+                                            3 -> sm?.term3Marks
+                                            else -> null
+                                        }
+                                        tm?.total ?: 0
+                                    }
+                                }
+                                row.append(",\"$totalMark\"")
+
                                 val peSm = record.subjectMarks[Subject.PE]
-                                val (peSa, peFa, peTot) = if (term == 0) {
-                                    Triple(peSm?.avgSa ?: 0, peSm?.avgFa ?: 0, peSm?.avgTotal ?: 0)
+                                val peTot = if (term == 0) {
+                                    peSm?.avgTotal ?: 0
                                 } else {
                                     val tm = when (term) {
                                         1 -> peSm?.term1Marks
@@ -409,26 +504,105 @@ object ExcelReportGenerator {
                                         3 -> peSm?.term3Marks
                                         else -> null
                                     }
-                                    Triple(tm?.sa ?: 0, tm?.faTotal ?: 0, tm?.total ?: 0)
+                                    tm?.total ?: 0
                                 }
-                                row.append(",\"$peSa\",\"$peFa\",\"$peTot\"")
-                            }
+                                row.append(",\"$peTot\"")
 
-                            val att = when (term) {
-                                1 -> record.term1Attendance
-                                2 -> record.term2Attendance
-                                3 -> record.term3Attendance
-                                else -> null
-                            }
-                            val (wDays, pDays) = if (term == 0) {
-                                Pair(record.totalWorkingDays, record.totalPresentDays)
-                            } else {
-                                Pair(att?.totalWorkingDays ?: school.getWorkingDaysForTerm(term), att?.presentDays ?: 0)
-                            }
-                            val pct = if (maxTotal > 0) String.format("%.1f%%", (totalMark.toDouble() / maxTotal) * 100) else "0.0%"
+                                val att = when (term) {
+                                    1 -> record.term1Attendance
+                                    2 -> record.term2Attendance
+                                    3 -> record.term3Attendance
+                                    else -> null
+                                }
+                                val (wDays, pDays) = if (term == 0) {
+                                    Pair(record.totalWorkingDays, record.totalPresentDays)
+                                } else {
+                                    Pair(att?.totalWorkingDays ?: school.getWorkingDaysForTerm(term), att?.presentDays ?: 0)
+                                }
+                                val pct = if (maxTotal > 0) String.format("%.1f%%", (totalMark.toDouble() / maxTotal) * 100) else "0.0%"
 
-                            row.append(",\"$wDays\",\"$pDays\",\"$pct\"")
-                            writer.appendLine(row.toString())
+                                row.append(",\"$wDays\",\"$pDays\",\"$pct\"")
+                                writer.appendLine(row.toString())
+                            }
+                        }
+                    }
+                } else {
+                    val row1 = StringBuilder("\"வ.எண்\",\"வகுப்பு\",\"சேர்க்கை எண்\",\"மாணவர் பெயர்\",\"இனம்\"")
+                    for (sub in subjects) {
+                        row1.append(",\"${sub.tamilName}\",\"\",\"\"")
+                    }
+                    row1.append(",\"மொத்தம் ($maxTotal)\"")
+                    row1.append(",\"பள்ளி நாட்கள்\",\"வருகை\",\"சராசரி %\"")
+                    writer.appendLine(row1.toString())
+
+                    val row2 = StringBuilder("\"\",\"\",\"\",\"\",\"\"")
+                    for (sub in subjects) {
+                        row2.append(",\"SA\",\"FA\",\"மொ\"")
+                    }
+                    row2.append(",\"\"")
+                    row2.append(",\"\",\"\",\"\"")
+                    writer.appendLine(row2.toString())
+
+                    var sNoCounter = 1
+                    classRecordsMap.toSortedMap().forEach { (cls, recs) ->
+                        if (recs.isNotEmpty()) {
+                            writer.appendLine("\"--- வகுப்பு $cls (CLASS $cls) - ${recs.size} மாணவர்கள் ---\"")
+                            recs.forEach { record ->
+                                val row = StringBuilder()
+                                row.append("\"${sNoCounter++}\",")
+                                row.append("\"$cls\",")
+                                row.append("\"${record.student.admissionNo}\",")
+                                row.append("\"${record.student.name}\",")
+                                row.append("\"${record.student.community}\"")
+
+                                for (sub in subjects) {
+                                    val sm = record.subjectMarks[sub]
+                                    val (sa, fa, tot) = if (term == 0) {
+                                        Triple(sm?.avgSa ?: 0, sm?.avgFa ?: 0, sm?.avgTotal ?: 0)
+                                    } else {
+                                        val tm = when (term) {
+                                            1 -> sm?.term1Marks
+                                            2 -> sm?.term2Marks
+                                            3 -> sm?.term3Marks
+                                            else -> null
+                                        }
+                                        Triple(tm?.sa ?: 0, tm?.faTotal ?: 0, tm?.total ?: 0)
+                                    }
+                                    row.append(",\"$sa\",\"$fa\",\"$tot\"")
+                                }
+
+                                val totalMark = if (term == 0) {
+                                    subjects.sumOf { sub -> record.subjectMarks[sub]?.avgTotal ?: 0 }
+                                } else {
+                                    subjects.sumOf { sub ->
+                                        val sm = record.subjectMarks[sub]
+                                        val tm = when (term) {
+                                            1 -> sm?.term1Marks
+                                            2 -> sm?.term2Marks
+                                            3 -> sm?.term3Marks
+                                            else -> null
+                                        }
+                                        tm?.total ?: 0
+                                    }
+                                }
+                                row.append(",\"$totalMark\"")
+
+                                val att = when (term) {
+                                    1 -> record.term1Attendance
+                                    2 -> record.term2Attendance
+                                    3 -> record.term3Attendance
+                                    else -> null
+                                }
+                                val (wDays, pDays) = if (term == 0) {
+                                    Pair(record.totalWorkingDays, record.totalPresentDays)
+                                } else {
+                                    Pair(att?.totalWorkingDays ?: school.getWorkingDaysForTerm(term), att?.presentDays ?: 0)
+                                }
+                                val pct = if (maxTotal > 0) String.format("%.1f%%", (totalMark.toDouble() / maxTotal) * 100) else "0.0%"
+
+                                row.append(",\"$wDays\",\"$pDays\",\"$pct\"")
+                                writer.appendLine(row.toString())
+                            }
                         }
                     }
                 }
