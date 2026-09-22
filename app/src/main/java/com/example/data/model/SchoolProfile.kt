@@ -14,10 +14,10 @@ data class SchoolProfile(
     val unionName: String = "இளையான்குடி ஒன்றியம்",
     val districtName: String = "சிவகங்கை மாவட்டம்",
     val academicYear: String = "2026-2027",
-    val headmasterName: String = "மு. ஆரோக்கியசாமி M.A., B.Ed.",
+    val headmasterName: String = "ராபர்ட் செபாஸ்டின் ஜோ",
     val term1WorkingDays: Int = 80,
-    val term2WorkingDays: Int = 80,
-    val term3WorkingDays: Int = 60
+    val term2WorkingDays: Int = 0,
+    val term3WorkingDays: Int = 0
 ) {
     val displayNameWithUdise: String
         get() = if (udiseCode.isNotBlank()) "$schoolName (UDISE: $udiseCode)" else schoolName

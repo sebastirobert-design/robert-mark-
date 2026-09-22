@@ -81,10 +81,23 @@ fun SchoolSettingsScreen(
     var academicYear by remember(schoolProfile) { mutableStateOf(schoolProfile.academicYear) }
     var headmasterName by remember(schoolProfile) { mutableStateOf(schoolProfile.headmasterName) }
 
-    // Term working days states
-    var term1DaysStr by remember(schoolProfile) { mutableStateOf(schoolProfile.term1WorkingDays.toString()) }
-    var term2DaysStr by remember(schoolProfile) { mutableStateOf(schoolProfile.term2WorkingDays.toString()) }
-    var term3DaysStr by remember(schoolProfile) { mutableStateOf(schoolProfile.term3WorkingDays.toString()) }
+    // Term working days states - default to term 1 only if others are 0
+    var term1DaysStr by remember(schoolProfile) {
+        mutableStateOf(if (schoolProfile.term1WorkingDays > 0) schoolProfile.term1WorkingDays.toString() else "80")
+    }
+    var term2DaysStr by remember(schoolProfile) {
+        mutableStateOf(if (schoolProfile.term2WorkingDays > 0) schoolProfile.term2WorkingDays.toString() else "")
+    }
+    var term3DaysStr by remember(schoolProfile) {
+        mutableStateOf(if (schoolProfile.term3WorkingDays > 0) schoolProfile.term3WorkingDays.toString() else "")
+    }
+    var workingDaysActiveTerm by remember(schoolProfile) {
+        mutableStateOf(
+            if (schoolProfile.term3WorkingDays > 0) 3
+            else if (schoolProfile.term2WorkingDays > 0) 2
+            else 1
+        )
+    }
 
     var showApplyWorkingDaysDialog by remember { mutableStateOf(false) }
     var showRestoreConfirmDialog by remember { mutableStateOf(false) }
@@ -113,10 +126,14 @@ fun SchoolSettingsScreen(
         }
     }
 
-    val term1Days = term1DaysStr.toIntOrNull() ?: 80
-    val term2Days = term2DaysStr.toIntOrNull() ?: 80
-    val term3Days = term3DaysStr.toIntOrNull() ?: 60
-    val totalDays = term1Days + term2Days + term3Days
+    val term1Days = term1DaysStr.toIntOrNull() ?: 0
+    val term2Days = if (workingDaysActiveTerm >= 2) (term2DaysStr.toIntOrNull() ?: 0) else 0
+    val term3Days = if (workingDaysActiveTerm >= 3) (term3DaysStr.toIntOrNull() ?: 0) else 0
+    val totalDays = when (workingDaysActiveTerm) {
+        1 -> term1Days
+        2 -> term1Days + term2Days
+        else -> term1Days + term2Days + term3Days
+    }
 
     LazyColumn(
         modifier = modifier
@@ -235,7 +252,7 @@ fun SchoolSettingsScreen(
                         value = headmasterName,
                         onValueChange = { headmasterName = it },
                         label = { Text("தலைமை ஆசிரியர் பெயர் (Headmaster Name)") },
-                        placeholder = { Text("எ.கா. மு. ஆரோக்கியசாமி M.A., B.Ed.") },
+                        placeholder = { Text("எ.கா. ராபர்ட் செபாஸ்டின் ஜோ") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth().testTag("input_headmaster_name")
                     )
@@ -284,62 +301,259 @@ fun SchoolSettingsScreen(
                         }
                     }
 
+                    Text(
+                        text = "உள்ளீடு செய்யும் பருவம்:",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = NavyDark
+                    )
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedTextField(
-                            value = term1DaysStr,
-                            onValueChange = { term1DaysStr = it.filter { ch -> ch.isDigit() } },
-                            label = { Text("பருவம் 1") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f).testTag("input_term1_working_days")
-                        )
-
-                        OutlinedTextField(
-                            value = term2DaysStr,
-                            onValueChange = { term2DaysStr = it.filter { ch -> ch.isDigit() } },
-                            label = { Text("பருவம் 2") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f).testTag("input_term2_working_days")
-                        )
-
-                        OutlinedTextField(
-                            value = term3DaysStr,
-                            onValueChange = { term3DaysStr = it.filter { ch -> ch.isDigit() } },
-                            label = { Text("பருவம் 3") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            modifier = Modifier.weight(1f).testTag("input_term3_working_days")
-                        )
+                        listOf(
+                            1 to "பருவம் 1",
+                            2 to "பருவம் 2",
+                            3 to "பருவம் 3"
+                        ).forEach { (termNum, termLabel) ->
+                            val isSelected = workingDaysActiveTerm == termNum
+                            Button(
+                                onClick = {
+                                    workingDaysActiveTerm = termNum
+                                    if (termNum == 1) {
+                                        term2DaysStr = ""
+                                        term3DaysStr = ""
+                                    } else if (termNum == 2) {
+                                        term3DaysStr = ""
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (isSelected) NavyPrimary else Color(0xFFF1F5F9),
+                                    contentColor = if (isSelected) Color.White else NavyDark
+                                ),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = termLabel,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                        }
                     }
 
-                    // Total working days summary banner
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFEFF6FF),
-                        border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "ஆண்டு மொத்த வேலை நாட்கள்:",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = NavyDark
-                            )
-                            Text(
-                                text = "$totalDays நாட்கள் (பரு 1: $term1Days + பரு 2: $term2Days + பரு 3: $term3Days)",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = NavyPrimary
-                            )
+                    when (workingDaysActiveTerm) {
+                        1 -> {
+                            // முதல் பருவம் மட்டும் entry செய்யவேண்டும்; மற்ற இரு பருவங்களும் எண்கள் இல்லாமல் இருக்கவேண்டும்
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = term1DaysStr,
+                                    onValueChange = { term1DaysStr = it.filter { ch -> ch.isDigit() } },
+                                    label = { Text("பருவம் 1") },
+                                    placeholder = { Text("80") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f).testTag("input_term1_working_days")
+                                )
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFFF8FAFC),
+                                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text("பருவம் 2", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text("—", fontSize = 16.sp, color = Color.LightGray, fontWeight = FontWeight.Bold)
+                                        Text("எண்கள் இல்லை", fontSize = 9.5.sp, color = Color.Gray)
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFFF8FAFC),
+                                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text("பருவம் 3", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text("—", fontSize = 16.sp, color = Color.LightGray, fontWeight = FontWeight.Bold)
+                                        Text("எண்கள் இல்லை", fontSize = 9.5.sp, color = Color.Gray)
+                                    }
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFFEFF6FF),
+                                border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "பருவம் 1 வேலை நாட்கள்:",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = NavyDark
+                                    )
+                                    Text(
+                                        text = "$term1Days நாட்கள்",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = NavyPrimary
+                                    )
+                                }
+                            }
+                        }
+                        2 -> {
+                            // இரண்டாம் பருவம் என்ட்ரி செய்யும்போது முதல் பருவம் மற்றும் இரண்டாம் பருவம் display ஆகவேண்டும்
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = term1DaysStr,
+                                    onValueChange = { term1DaysStr = it.filter { ch -> ch.isDigit() } },
+                                    label = { Text("பருவம் 1") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f).testTag("input_term1_working_days")
+                                )
+
+                                OutlinedTextField(
+                                    value = term2DaysStr,
+                                    onValueChange = { term2DaysStr = it.filter { ch -> ch.isDigit() } },
+                                    label = { Text("பருவம் 2") },
+                                    placeholder = { Text("80") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f).testTag("input_term2_working_days")
+                                )
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFFF8FAFC),
+                                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text("பருவம் 3", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text("—", fontSize = 16.sp, color = Color.LightGray, fontWeight = FontWeight.Bold)
+                                        Text("எண்கள் இல்லை", fontSize = 9.5.sp, color = Color.Gray)
+                                    }
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFFEFF6FF),
+                                border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "பருவம் 1 & 2 கூடுதல் வேலை நாட்கள்:",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = NavyDark
+                                    )
+                                    Text(
+                                        text = "${term1Days + term2Days} நாட்கள் (பரு 1: $term1Days + பரு 2: $term2Days)",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = NavyPrimary
+                                    )
+                                }
+                            }
+                        }
+                        else -> {
+                            // மூன்றாம் பருவம் என்ட்ரி செய்யும்போது 1,2 3 ஆம் பருவங்கள் டிஸ்ப்ளே ஆகி மொத்தம் தெரியவேண்டும்
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = term1DaysStr,
+                                    onValueChange = { term1DaysStr = it.filter { ch -> ch.isDigit() } },
+                                    label = { Text("பருவம் 1") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f).testTag("input_term1_working_days")
+                                )
+
+                                OutlinedTextField(
+                                    value = term2DaysStr,
+                                    onValueChange = { term2DaysStr = it.filter { ch -> ch.isDigit() } },
+                                    label = { Text("பருவம் 2") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f).testTag("input_term2_working_days")
+                                )
+
+                                OutlinedTextField(
+                                    value = term3DaysStr,
+                                    onValueChange = { term3DaysStr = it.filter { ch -> ch.isDigit() } },
+                                    label = { Text("பருவம் 3") },
+                                    placeholder = { Text("60") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f).testTag("input_term3_working_days")
+                                )
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFFEFF6FF),
+                                border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "ஆண்டு மொத்த வேலை நாட்கள்:",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = NavyDark
+                                    )
+                                    Text(
+                                        text = "$totalDays நாட்கள் (பரு 1: $term1Days + பரு 2: $term2Days + பரு 3: $term3Days)",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = NavyPrimary
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -588,12 +802,14 @@ fun SchoolSettingsScreen(
                 }
             },
             text = {
+                val stageDetails = when (workingDaysActiveTerm) {
+                    1 -> "• பருவம் 1: $term1Days நாட்கள்"
+                    2 -> "• பருவம் 1: $term1Days நாட்கள்\n• பருவம் 2: $term2Days நாட்கள்\n• கூடுதல்: ${term1Days + term2Days} நாட்கள்"
+                    else -> "• பருவம் 1: $term1Days நாட்கள்\n• பருவம் 2: $term2Days நாட்கள்\n• பருவம் 3: $term3Days நாட்கள்\n• ஆண்டு மொத்தம்: $totalDays நாட்கள்"
+                }
                 Text(
                     text = "அனைத்து ${allStudents.size} மாணவர்களுக்கும் கீழ்க்கண்ட வேலை நாட்கள் தானாகப் பொருத்தப்படும்:\n\n" +
-                            "• பருவம் 1: $term1Days நாட்கள்\n" +
-                            "• பருவம் 2: $term2Days நாட்கள்\n" +
-                            "• பருவம் 3: $term3Days நாட்கள்\n" +
-                            "• ஆண்டு மொத்தம்: $totalDays நாட்கள்\n\n" +
+                            "$stageDetails\n\n" +
                             "(மாணவர்களின் வருகை நாட்கள் பத்திரமாக பாதுகாக்கப்படும். உறுதி செய்கிறீர்களா?)",
                     fontSize = 13.sp,
                     lineHeight = 18.sp

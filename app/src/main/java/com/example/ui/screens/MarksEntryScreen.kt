@@ -384,6 +384,9 @@ fun StudentMarkForm(
     var workingDaysStr by remember(student.id, term, defaultWorkingDays) { mutableStateOf(defaultWorkingDays.toString()) }
     var presentDaysStr by remember(student.id, term, defaultWorkingDays) { mutableStateOf(((defaultWorkingDays * 0.95).toInt()).toString()) }
 
+    var term1Att by remember(student.id, term) { mutableStateOf<com.example.data.model.TermAttendance?>(null) }
+    var term2Att by remember(student.id, term) { mutableStateOf<com.example.data.model.TermAttendance?>(null) }
+
     // Marks state map
     val marksState = remember(student.id, term) {
         mutableStateMapOf<Subject, MarksInputData>().apply {
@@ -411,6 +414,17 @@ fun StudentMarkForm(
 
     // Load any existing saved marks from database
     LaunchedEffect(student.id, term) {
+        if (term >= 2) {
+            term1Att = viewModel.getAttendanceForStudentAndTerm(student.id, 1)
+        } else {
+            term1Att = null
+        }
+        if (term >= 3) {
+            term2Att = viewModel.getAttendanceForStudentAndTerm(student.id, 2)
+        } else {
+            term2Att = null
+        }
+
         val savedMarks = viewModel.getMarksForStudentAndTerm(student.id, term)
         if (savedMarks.isNotEmpty()) {
             savedMarks.forEach { sm ->
@@ -561,6 +575,60 @@ fun StudentMarkForm(
                         }
                     }
 
+                    // Display previous terms if term >= 2
+                    if (term == 2) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFF8FAFC),
+                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("முந்தைய பருவம் 1:", fontSize = 11.5.sp, color = Color.DarkGray)
+                                Text(
+                                    text = "${term1Att?.presentDays ?: 0} / ${term1Att?.totalWorkingDays ?: 0} நாட்கள்",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.5.sp,
+                                    color = NavyDark
+                                )
+                            }
+                        }
+                    } else if (term == 3) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFF8FAFC),
+                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "பருவம் 1: ${term1Att?.presentDays ?: 0}/${term1Att?.totalWorkingDays ?: 0}",
+                                    fontSize = 11.5.sp,
+                                    color = Color.DarkGray,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "பருவம் 2: ${term2Att?.presentDays ?: 0}/${term2Att?.totalWorkingDays ?: 0}",
+                                    fontSize = 11.5.sp,
+                                    color = Color.DarkGray,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -569,7 +637,7 @@ fun StudentMarkForm(
                             OutlinedTextField(
                                 value = workingDaysStr,
                                 onValueChange = { workingDaysStr = it },
-                                label = { Text("பள்ளி வேலை நாட்கள்") },
+                                label = { Text("பருவம் $term வேலை நாட்கள்") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth()
@@ -590,6 +658,82 @@ fun StudentMarkForm(
                             singleLine = true,
                             modifier = Modifier.weight(1f)
                         )
+                    }
+
+                    // Summary banner based on term
+                    val curW = workingDaysStr.toIntOrNull() ?: 0
+                    val curP = presentDaysStr.toIntOrNull() ?: 0
+
+                    if (term == 2) {
+                        val t1W = term1Att?.totalWorkingDays ?: 0
+                        val t1P = term1Att?.presentDays ?: 0
+                        val cumW = t1W + curW
+                        val cumP = t1P + curP
+                        val cumPct = if (cumW > 0) (cumP * 100.0) / cumW else 0.0
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFEFF6FF),
+                            border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "பருவம் 1 + 2 கூடுதல் வருகை:",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = NavyDark
+                                )
+                                Text(
+                                    text = "$cumP / $cumW நாட்கள் (${String.format("%.1f%%", cumPct)})",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.5.sp,
+                                    color = NavyPrimary
+                                )
+                            }
+                        }
+                    } else if (term == 3) {
+                        val t1W = term1Att?.totalWorkingDays ?: 0
+                        val t1P = term1Att?.presentDays ?: 0
+                        val t2W = term2Att?.totalWorkingDays ?: 0
+                        val t2P = term2Att?.presentDays ?: 0
+                        val yearW = t1W + t2W + curW
+                        val yearP = t1P + t2P + curP
+                        val yearPct = if (yearW > 0) (yearP * 100.0) / yearW else 0.0
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFEFF6FF),
+                            border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "1, 2, 3 ஆம் பருவங்கள் ஆண்டு மொத்தம்:",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.5.sp,
+                                    color = NavyDark
+                                )
+                                Text(
+                                    text = "$yearP / $yearW நாட்கள் (${String.format("%.1f%%", yearPct)})",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.5.sp,
+                                    color = NavyPrimary
+                                )
+                            }
+                        }
                     }
                 }
             }

@@ -48,25 +48,26 @@ class ExampleUnitTest {
 
     @Test
     fun testFourAcademicSectionsSubjectsAndTotals() {
-        // Section 1: Class 1-3 (Primary): Tamil, English, Maths (300 marks)
-        for (cls in 1..3) {
+        // Section 1: Class 1-2: Tamil, English, Maths, EVS (4 subjects)
+        for (cls in 1..2) {
             val subjects = com.example.data.model.Subject.getSubjectsForClass(cls)
-            assertEquals(3, subjects.size)
+            assertEquals(4, subjects.size)
             assertTrue(subjects.contains(com.example.data.model.Subject.TAMIL))
             assertTrue(subjects.contains(com.example.data.model.Subject.ENGLISH))
             assertTrue(subjects.contains(com.example.data.model.Subject.MATHS))
+            assertTrue(subjects.contains(com.example.data.model.Subject.EVS))
             assertFalse(subjects.contains(com.example.data.model.Subject.SCIENCE))
             assertFalse(subjects.contains(com.example.data.model.Subject.PE))
         }
 
-        // Section 2: Class 4-5 (Upper Primary): 5 subjects (500 marks)
-        for (cls in 4..5) {
+        // Section 2: Class 3-5: 5 subjects (Tamil, English, Maths, Science, Social)
+        for (cls in 3..5) {
             val subjects = com.example.data.model.Subject.getSubjectsForClass(cls)
             assertEquals(5, subjects.size)
             assertFalse(subjects.contains(com.example.data.model.Subject.PE))
         }
 
-        // Section 3: Class 6-7 (Middle): 5 subjects (500 marks)
+        // Section 3: Class 6-7: 5 subjects (Tamil, English, Maths, Science, Social)
         for (cls in 6..7) {
             val subjects = com.example.data.model.Subject.getSubjectsForClass(cls)
             assertEquals(5, subjects.size)

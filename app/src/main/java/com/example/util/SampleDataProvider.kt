@@ -19,9 +19,20 @@ object SampleDataProvider {
                 unionName = "இளையான்குடி ஒன்றியம்",
                 districtName = "சிவகங்கை மாவட்டம்",
                 academicYear = "2026-2027",
-                headmasterName = "மு. ஆரோக்கியசாமி M.A., B.Ed."
+                headmasterName = "ராபர்ட் செபாஸ்டின் ஜோ"
             )
             repository.updateSchoolProfile(defaultProfile)
+        } else {
+            var updatedProfile = existingProfile
+            if (existingProfile.headmasterName.contains("ஆரோக்கியசாமி")) {
+                updatedProfile = updatedProfile.copy(headmasterName = "ராபர்ட் செபாஸ்டின் ஜோ")
+            }
+            if (existingProfile.term2WorkingDays == 80 && existingProfile.term3WorkingDays == 60) {
+                updatedProfile = updatedProfile.copy(term2WorkingDays = 0, term3WorkingDays = 0)
+            }
+            if (updatedProfile != existingProfile) {
+                repository.updateSchoolProfile(updatedProfile)
+            }
         }
 
         val existingStudents = repository.allStudents.firstOrNull() ?: emptyList()

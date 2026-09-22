@@ -86,36 +86,36 @@ data class AcademicSection(
 val ACADEMIC_SECTIONS = listOf(
     AcademicSection(
         id = 1,
-        title = "வகுப்பு 1 - 2 (தொடக்கப் பிரிவு)",
-        shortName = "வகுப்பு 1-2",
-        categoryName = "தொடக்கப் பிரிவு",
+        title = "வகுப்பு 1, 2",
+        shortName = "வகுப்பு 1, 2",
+        categoryName = "வகுப்பு 1, 2",
         description = "4 பாடங்கள்: தமிழ், ஆங்கிலம், கணிதம், சூழ்நிலையியல் (மொத்தம் 400 மதிப்பெண்கள்)",
         classes = listOf(1, 2),
         totalMarks = 400
     ),
     AcademicSection(
         id = 2,
-        title = "வகுப்பு 3 - 5 (தொடக்க மேல்நிலைப் பிரிவு)",
-        shortName = "வகுப்பு 3-5",
-        categoryName = "தொடக்க மேல்நிலைப் பிரிவு",
+        title = "வகுப்பு 3, 4, 5",
+        shortName = "வகுப்பு 3, 4, 5",
+        categoryName = "வகுப்பு 3, 4, 5",
         description = "5 பாடங்கள்: தமிழ், ஆங்கிலம், கணிதம், அறிவியல், சமூக அறிவியல் (மொத்தம் 500 மதிப்பெண்கள்)",
         classes = listOf(3, 4, 5),
         totalMarks = 500
     ),
     AcademicSection(
         id = 3,
-        title = "வகுப்பு 6 - 7 (நடுநிலைப் பிரிவு)",
-        shortName = "வகுப்பு 6-7",
-        categoryName = "நடுநிலைப் பிரிவு",
+        title = "வகுப்பு 6, 7",
+        shortName = "வகுப்பு 6, 7",
+        categoryName = "வகுப்பு 6, 7",
         description = "5 பாடங்கள் (மொத்தம் 500 மதிப்பெண்கள்)",
         classes = listOf(6, 7),
         totalMarks = 500
     ),
     AcademicSection(
         id = 4,
-        title = "வகுப்பு 8 (சான்றிதழ் பிரிவு)",
+        title = "வகுப்பு 8",
         shortName = "வகுப்பு 8",
-        categoryName = "சான்றிதழ் பிரிவு",
+        categoryName = "வகுப்பு 8",
         description = "5 பாடங்கள் (ஒவ்வொரு பாடமும் நேரடி 100 மதிப்பெண்) + உடற்கல்வி மற்றும் ஆண்டு இறுதி சான்றிதழ்",
         classes = listOf(8),
         totalMarks = 500,
@@ -204,7 +204,7 @@ fun ConsolidationScreen(
                     onClick = { isGroupMode = true },
                     label = {
                         Text(
-                            "முப்பருவப் பிரிவுகள் (1-2, 3-5, 6-7, 8)",
+                            "வகுப்புகள் (1,2 • 3,4,5 • 6,7 • 8)",
                             fontSize = 11.5.sp,
                             fontWeight = if (isGroupMode) FontWeight.Bold else FontWeight.Normal
                         )
@@ -271,17 +271,11 @@ fun ConsolidationScreen(
                             selected = selectedSectionIndex == index,
                             onClick = { selectedSectionIndex = index },
                             label = {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = sec.shortName,
-                                        fontSize = 11.5.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = sec.categoryName,
-                                        fontSize = 9.sp
-                                    )
-                                }
+                                Text(
+                                    text = sec.shortName,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = when (sec.id) {

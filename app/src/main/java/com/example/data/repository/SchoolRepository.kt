@@ -135,6 +135,7 @@ class SchoolRepository(private val database: AppDatabase) {
                     3 -> term3Days
                     else -> term1Days
                 }
+                if (targetDays <= 0) continue // Skip terms that have no working days entered yet
                 val existing = studentAtts.find { it.term == t }
                 if (existing != null) {
                     val newPresent = existing.presentDays.coerceAtMost(targetDays)
