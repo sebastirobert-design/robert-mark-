@@ -387,6 +387,7 @@ fun StudentMarkForm(
     val subjects = Subject.getSubjectsForClass(student.stdClass)
     val isPrimary = student.stdClass in 1..3
     val isDark = isSystemInDarkTheme()
+    val context = LocalContext.current
 
     val schoolProfile by viewModel.schoolProfile.collectAsState()
     val defaultWorkingDays = schoolProfile.getWorkingDaysForTerm(term)
@@ -405,15 +406,16 @@ fun StudentMarkForm(
         mutableStateMapOf<Subject, MarksInputData>().apply {
             subjects.forEach { sub ->
                 if (isPrimary) {
+                    val isCls3 = student.stdClass == 3
                     put(sub, MarksInputData(
-                        naney1Oral = 10,
+                        naney1Oral = if (isCls3) 5 else 10,
                         naney1Activity = 10,
                         naney1Written = 5,
-                        naney2Oral = 10,
+                        naney2Oral = if (isCls3) 5 else 10,
                         naney2Activity = 10,
                         naney2Written = 5,
                         thiranariOral = 10,
-                        thiranariWritten = 40
+                        thiranariWritten = if (isCls3) 50 else 40
                     ))
                 } else if (student.stdClass == 8) {
                     // Req 3: எட்டாம் வகுப்பிற்கு மட்டும் நேரடி 100 மதிப்பெண்
@@ -1171,11 +1173,15 @@ fun StudentMarkForm(
                                 ) {
                                     OutlinedTextField(
                                         value = data.naney1Oral.toString(),
-                                        onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
-                                            marksState[subject] = data.copy(naney1Oral = v.coerceIn(0, 8))
+                                        onValueChange = { input ->
+                                            val v = input.toIntOrNull() ?: 0
+                                            if (v > 5) {
+                                                Toast.makeText(context, "வாய்மொழி மதிப்பெண் அதிகபட்சம் 5 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                            }
+                                            marksState[subject] = data.copy(naney1Oral = v.coerceIn(0, 5))
                                         },
-                                        label = { Text("வாய்மொழி [8]") },
+                                        label = { Text("வாய்மொழி [5]") },
+                                        placeholder = { Text("Max: 5") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1183,11 +1189,15 @@ fun StudentMarkForm(
 
                                     OutlinedTextField(
                                         value = data.naney1Activity.toString(),
-                                        onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
-                                            marksState[subject] = data.copy(naney1Activity = v.coerceIn(0, 8))
+                                        onValueChange = { input ->
+                                            val v = input.toIntOrNull() ?: 0
+                                            if (v > 10) {
+                                                Toast.makeText(context, "செயல்பாடு மதிப்பெண் அதிகபட்சம் 10 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                            }
+                                            marksState[subject] = data.copy(naney1Activity = v.coerceIn(0, 10))
                                         },
-                                        label = { Text("செயல்பாடு [8]") },
+                                        label = { Text("செயல்பாடு [10]") },
+                                        placeholder = { Text("Max: 10") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1195,11 +1205,15 @@ fun StudentMarkForm(
 
                                     OutlinedTextField(
                                         value = data.naney1Written.toString(),
-                                        onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
-                                            marksState[subject] = data.copy(naney1Written = v.coerceIn(0, 4))
+                                        onValueChange = { input ->
+                                            val v = input.toIntOrNull() ?: 0
+                                            if (v > 5) {
+                                                Toast.makeText(context, "எழுத்துவழி மதிப்பெண் அதிகபட்சம் 5 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                            }
+                                            marksState[subject] = data.copy(naney1Written = v.coerceIn(0, 5))
                                         },
-                                        label = { Text("எழுத்துவழி [4]") },
+                                        label = { Text("எழுத்துவழி [5]") },
+                                        placeholder = { Text("Max: 5") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1251,11 +1265,15 @@ fun StudentMarkForm(
                                 ) {
                                     OutlinedTextField(
                                         value = data.naney2Oral.toString(),
-                                        onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
-                                            marksState[subject] = data.copy(naney2Oral = v.coerceIn(0, 8))
+                                        onValueChange = { input ->
+                                            val v = input.toIntOrNull() ?: 0
+                                            if (v > 5) {
+                                                Toast.makeText(context, "வாய்மொழி மதிப்பெண் அதிகபட்சம் 5 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                            }
+                                            marksState[subject] = data.copy(naney2Oral = v.coerceIn(0, 5))
                                         },
-                                        label = { Text("வாய்மொழி [8]") },
+                                        label = { Text("வாய்மொழி [5]") },
+                                        placeholder = { Text("Max: 5") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1263,11 +1281,15 @@ fun StudentMarkForm(
 
                                     OutlinedTextField(
                                         value = data.naney2Activity.toString(),
-                                        onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
-                                            marksState[subject] = data.copy(naney2Activity = v.coerceIn(0, 8))
+                                        onValueChange = { input ->
+                                            val v = input.toIntOrNull() ?: 0
+                                            if (v > 10) {
+                                                Toast.makeText(context, "செயல்பாடு மதிப்பெண் அதிகபட்சம் 10 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                            }
+                                            marksState[subject] = data.copy(naney2Activity = v.coerceIn(0, 10))
                                         },
-                                        label = { Text("செயல்பாடு [8]") },
+                                        label = { Text("செயல்பாடு [10]") },
+                                        placeholder = { Text("Max: 10") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1275,11 +1297,15 @@ fun StudentMarkForm(
 
                                     OutlinedTextField(
                                         value = data.naney2Written.toString(),
-                                        onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
-                                            marksState[subject] = data.copy(naney2Written = v.coerceIn(0, 4))
+                                        onValueChange = { input ->
+                                            val v = input.toIntOrNull() ?: 0
+                                            if (v > 5) {
+                                                Toast.makeText(context, "எழுத்துவழி மதிப்பெண் அதிகபட்சம் 5 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                            }
+                                            marksState[subject] = data.copy(naney2Written = v.coerceIn(0, 5))
                                         },
-                                        label = { Text("எழுத்துவழி [4]") },
+                                        label = { Text("எழுத்துவழி [5]") },
+                                        placeholder = { Text("Max: 5") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1657,15 +1683,16 @@ fun Class1To3RegisterTableView(
     val classMarksMap = remember(students, stdClass, term, selectedSubject) {
         mutableStateMapOf<Long, MarksInputData>().apply {
             students.forEach { st ->
+                val isCls3 = stdClass == 3
                 put(st.id, MarksInputData(
-                    naney1Oral = 10,
+                    naney1Oral = if (isCls3) 5 else 10,
                     naney1Activity = 10,
                     naney1Written = 5,
-                    naney2Oral = 10,
+                    naney2Oral = if (isCls3) 5 else 10,
                     naney2Activity = 10,
                     naney2Written = 5,
                     thiranariOral = 10,
-                    thiranariWritten = 40
+                    thiranariWritten = if (isCls3) 50 else 40
                 ))
             }
         }
@@ -1846,13 +1873,13 @@ fun Class1To3RegisterTableView(
             val n2Label = if (isClass3) "நானே செய்வேன் - 2 [20]" else "நானே செய்வேன் - 2 [25]"
             val thLabel = if (isClass3) "திரனறி மதிப்பீடு [60]" else "திறனறி தேர்வு [50]"
 
-            val n1OralMax = if (isClass3) 8 else 10
-            val n1ActMax = if (isClass3) 8 else 10
-            val n1WriMax = if (isClass3) 4 else 5
+            val n1OralMax = if (isClass3) 5 else 10
+            val n1ActMax = 10
+            val n1WriMax = 5
 
-            val n2OralMax = if (isClass3) 8 else 10
-            val n2ActMax = if (isClass3) 8 else 10
-            val n2WriMax = if (isClass3) 4 else 5
+            val n2OralMax = if (isClass3) 5 else 10
+            val n2ActMax = 10
+            val n2WriMax = 5
 
             val thOralMax = 10
             val thWriMax = if (isClass3) 50 else 40
@@ -1938,32 +1965,32 @@ fun Class1To3RegisterTableView(
                                 RegisterCell(student.name, 140, alignLeft = true)
 
                                 // Editable cells: Naney 1
-                                RegisterEditableCell(n1Oral, 80, n1OralMax) {
+                                RegisterEditableCell(n1Oral, 80, n1OralMax, "oral") {
                                     classMarksMap[student.id] = currentInput.copy(naney1Oral = it)
                                 }
-                                RegisterEditableCell(n1Act, 80, n1ActMax) {
+                                RegisterEditableCell(n1Act, 80, n1ActMax, "activity") {
                                     classMarksMap[student.id] = currentInput.copy(naney1Activity = it)
                                 }
-                                RegisterEditableCell(n1Wri, 80, n1WriMax) {
+                                RegisterEditableCell(n1Wri, 80, n1WriMax, "written") {
                                     classMarksMap[student.id] = currentInput.copy(naney1Written = it)
                                 }
 
                                 // Editable cells: Naney 2
-                                RegisterEditableCell(n2Oral, 80, n2OralMax) {
+                                RegisterEditableCell(n2Oral, 80, n2OralMax, "oral") {
                                     classMarksMap[student.id] = currentInput.copy(naney2Oral = it)
                                 }
-                                RegisterEditableCell(n2Act, 80, n2ActMax) {
+                                RegisterEditableCell(n2Act, 80, n2ActMax, "activity") {
                                     classMarksMap[student.id] = currentInput.copy(naney2Activity = it)
                                 }
-                                RegisterEditableCell(n2Wri, 80, n2WriMax) {
+                                RegisterEditableCell(n2Wri, 80, n2WriMax, "written") {
                                     classMarksMap[student.id] = currentInput.copy(naney2Written = it)
                                 }
 
                                 // Editable cells: Thiranari
-                                RegisterEditableCell(thOral, 85, thOralMax) {
+                                RegisterEditableCell(thOral, 85, thOralMax, "th_oral") {
                                     classMarksMap[student.id] = currentInput.copy(thiranariOral = it)
                                 }
-                                RegisterEditableCell(thWri, 85, thWriMax) {
+                                RegisterEditableCell(thWri, 85, thWriMax, "th_wri") {
                                     classMarksMap[student.id] = currentInput.copy(thiranariWritten = it)
                                 }
 
@@ -2014,8 +2041,10 @@ private fun RegisterEditableCell(
     value: Int,
     widthDp: Int,
     maxVal: Int,
+    fieldName: String = "",
     onValueChange: (Int) -> Unit
 ) {
+    val context = LocalContext.current
     var textVal by remember(value) { mutableStateOf(value.toString()) }
 
     Box(
@@ -2031,6 +2060,15 @@ private fun RegisterEditableCell(
                 textVal = input
                 val parsed = input.toIntOrNull()
                 if (parsed != null) {
+                    if (parsed > maxVal) {
+                        val alertMsg = when (fieldName) {
+                            "oral" -> "வாய்மொழி மதிப்பெண் அதிகபட்சம் $maxVal மட்டுமே இருக்க வேண்டும்!"
+                            "activity" -> "செயல்பாடு மதிப்பெண் அதிகபட்சம் $maxVal மட்டுமே இருக்க வேண்டும்!"
+                            "written" -> "எழுத்துவழி மதிப்பெண் அதிகபட்சம் $maxVal மட்டுமே இருக்க வேண்டும்!"
+                            else -> "அதிகபட்ச மதிப்பெண் $maxVal மட்டுமே இருக்க வேண்டும்!"
+                        }
+                        Toast.makeText(context, alertMsg, Toast.LENGTH_SHORT).show()
+                    }
                     onValueChange(parsed.coerceIn(0, maxVal))
                 }
             },

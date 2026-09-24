@@ -1298,13 +1298,13 @@ fun Class1To3OfficialHeader(isClass3: Boolean = false) {
     val naney2Title = if (isClass3) "நானே செய்வேன் - 2 [20]" else "நானே செய்வேன் - 2 [25]"
     val thiranariTitle = if (isClass3) "திரனறி மதிப்பீடு [60]" else "திறனறி மதிப்பீடு [50]"
 
-    val oral1 = if (isClass3) "வாய்மொழி [8]" else "வாய்மொழி [10]"
-    val act1 = if (isClass3) "செயல்பாடு [8]" else "செயல்பாடு [10]"
-    val wri1 = if (isClass3) "எழுத்து [4]" else "எழுத்து [5]"
+    val oral1 = if (isClass3) "வாய்மொழி [5]" else "வாய்மொழி [10]"
+    val act1 = if (isClass3) "செயல்பாடு [10]" else "செயல்பாடு [10]"
+    val wri1 = if (isClass3) "எழுத்து [5]" else "எழுத்து [5]"
 
-    val oral2 = if (isClass3) "வாய்மொழி [8]" else "வாய்மொழி [10]"
-    val act2 = if (isClass3) "செயல்பாடு [8]" else "செயல்பாடு [10]"
-    val wri2 = if (isClass3) "எழுத்து [4]" else "எழுத்து [5]"
+    val oral2 = if (isClass3) "வாய்மொழி [5]" else "வாய்மொழி [10]"
+    val act2 = if (isClass3) "செயல்பாடு [10]" else "செயல்பாடு [10]"
+    val wri2 = if (isClass3) "எழுத்து [5]" else "எழுத்து [5]"
 
     val thOral = if (isClass3) "வாய்மொழி [10]" else "வாய்மொழி [10]"
     val thWri = if (isClass3) "எழுத்து [50]" else "எழுத்து [40]"

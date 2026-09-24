@@ -300,19 +300,19 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
                                     studentId = studentId,
                                     term = term,
                                     subjectKey = sub.key,
-                                    naney1Oral = 8,
-                                    naney1Activity = 8,
-                                    naney1Written = 4,
-                                    naney2Oral = 8,
-                                    naney2Activity = 8,
-                                    naney2Written = 4,
-                                    thiranariOral = 8,
-                                    thiranariWritten = 36,
+                                    naney1Oral = 5,
+                                    naney1Activity = 10,
+                                    naney1Written = 5,
+                                    naney2Oral = 5,
+                                    naney2Activity = 10,
+                                    naney2Written = 5,
+                                    thiranariOral = 10,
+                                    thiranariWritten = 44,
                                     faA = 20,
                                     faB = 20,
                                     faTotal = 40,
-                                    sa = 44,
-                                    total = 84,
+                                    sa = 54,
+                                    total = 94,
                                     learningLevel = "மலர்",
                                     grade = "A"
                                 )
@@ -418,14 +418,14 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
                         grade = grade
                     )
                 } else if (stdClass == 3) {
-                    val n1Oral = data.naney1Oral.coerceIn(0, 8)
-                    val n1Act = data.naney1Activity.coerceIn(0, 8)
-                    val n1Wri = data.naney1Written.coerceIn(0, 4)
+                    val n1Oral = data.naney1Oral.coerceIn(0, 5)
+                    val n1Act = data.naney1Activity.coerceIn(0, 10)
+                    val n1Wri = data.naney1Written.coerceIn(0, 5)
                     val n1Tot = n1Oral + n1Act + n1Wri
 
-                    val n2Oral = data.naney2Oral.coerceIn(0, 8)
-                    val n2Act = data.naney2Activity.coerceIn(0, 8)
-                    val n2Wri = data.naney2Written.coerceIn(0, 4)
+                    val n2Oral = data.naney2Oral.coerceIn(0, 5)
+                    val n2Act = data.naney2Activity.coerceIn(0, 10)
+                    val n2Wri = data.naney2Written.coerceIn(0, 5)
                     val n2Tot = n2Oral + n2Act + n2Wri
 
                     val thOral = data.thiranariOral.coerceIn(0, 10)

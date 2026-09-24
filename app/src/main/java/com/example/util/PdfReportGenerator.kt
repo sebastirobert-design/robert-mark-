@@ -1143,12 +1143,19 @@ object PdfReportGenerator {
 
         canvas.drawText("மாணவர் பெயர்", tableLeft + colSnoW + colAdmW + colNameW / 2f, tableTop + 30f, whiteThPaint)
 
+        val isCls3 = stdClass == 3
+        val n1HeaderLabel = if (isCls3) "[20 மதிப்பெண்]" else "[25 மதிப்பெண்]"
+        val n2HeaderLabel = if (isCls3) "[20 மதிப்பெண்]" else "[25 மதிப்பெண்]"
+        val thHeaderLabel = if (isCls3) "[60 மதிப்பெண்]" else "[50 மதிப்பெண்]"
+        val oralLabel = if (isCls3) "[5]" else "[10]"
+        val thWriLabel = if (isCls3) "[50]" else "[40]"
+
         // Naney 1 Header
         canvas.drawText("நானே செய்வேன் - 1", n1Left + n1TotalW / 2f, tableTop + 13f, redThPaint)
-        canvas.drawText("[25 மதிப்பெண்]", n1Left + n1TotalW / 2f, tableTop + 23f, redThPaint)
+        canvas.drawText(n1HeaderLabel, n1Left + n1TotalW / 2f, tableTop + 23f, redThPaint)
         // Naney 1 Sub-columns
         canvas.drawText("வாய்மொழி", n1Left + n1OralW / 2f, tableTop + headH1 + 11f, subThPaint)
-        canvas.drawText("[10]", n1Left + n1OralW / 2f, tableTop + headH1 + 21f, subThPaint)
+        canvas.drawText(oralLabel, n1Left + n1OralW / 2f, tableTop + headH1 + 21f, subThPaint)
 
         canvas.drawText("செயல்பாடு", n1Left + n1OralW + n1ActW / 2f, tableTop + headH1 + 11f, subThPaint)
         canvas.drawText("[10]", n1Left + n1OralW + n1ActW / 2f, tableTop + headH1 + 21f, subThPaint)
@@ -1158,10 +1165,10 @@ object PdfReportGenerator {
 
         // Naney 2 Header
         canvas.drawText("நானே செய்வேன் - 2", n2Left + n2TotalW / 2f, tableTop + 13f, redThPaint)
-        canvas.drawText("[25 மதிப்பெண்]", n2Left + n2TotalW / 2f, tableTop + 23f, redThPaint)
+        canvas.drawText(n2HeaderLabel, n2Left + n2TotalW / 2f, tableTop + 23f, redThPaint)
         // Naney 2 Sub-columns
         canvas.drawText("வாய்மொழி", n2Left + n2OralW / 2f, tableTop + headH1 + 11f, subThPaint)
-        canvas.drawText("[10]", n2Left + n2OralW / 2f, tableTop + headH1 + 21f, subThPaint)
+        canvas.drawText(oralLabel, n2Left + n2OralW / 2f, tableTop + headH1 + 21f, subThPaint)
 
         canvas.drawText("செயல்பாடு", n2Left + n2OralW + n2ActW / 2f, tableTop + headH1 + 11f, subThPaint)
         canvas.drawText("[10]", n2Left + n2OralW + n2ActW / 2f, tableTop + headH1 + 21f, subThPaint)
@@ -1171,13 +1178,13 @@ object PdfReportGenerator {
 
         // Thiranari Header
         canvas.drawText("திறனறி மதிப்பீடு", thLeft + thTotalW / 2f, tableTop + 13f, redThPaint)
-        canvas.drawText("[50 மதிப்பெண்]", thLeft + thTotalW / 2f, tableTop + 23f, redThPaint)
+        canvas.drawText(thHeaderLabel, thLeft + thTotalW / 2f, tableTop + 23f, redThPaint)
         // Thiranari Sub-columns
         canvas.drawText("வாய்மொழி", thLeft + thOralW / 2f, tableTop + headH1 + 11f, subThPaint)
         canvas.drawText("[10]", thLeft + thOralW / 2f, tableTop + headH1 + 21f, subThPaint)
 
         canvas.drawText("எழுத்துவழி", thLeft + thOralW + thWriW / 2f, tableTop + headH1 + 11f, subThPaint)
-        canvas.drawText("[40]", thLeft + thOralW + thWriW / 2f, tableTop + headH1 + 21f, subThPaint)
+        canvas.drawText(thWriLabel, thLeft + thOralW + thWriW / 2f, tableTop + headH1 + 21f, subThPaint)
 
         // Total & Pct Headers
         val blueThPaint = Paint(redThPaint).apply { color = Color.rgb(30, 58, 138) }

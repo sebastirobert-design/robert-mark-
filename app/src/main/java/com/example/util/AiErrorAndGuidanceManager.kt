@@ -126,14 +126,23 @@ object AiErrorAndGuidanceManager {
                 val n1Max = if (student.stdClass == 3) 20 else 25
                 val n2Max = if (student.stdClass == 3) 20 else 25
                 val thMax = if (student.stdClass == 3) 60 else 50
+                val oralMax = if (student.stdClass == 3) 5 else 10
+                val actMax = 10
+                val wriMax = 5
 
-                if (mark.naney1Total > n1Max || mark.naney2Total > n2Max || mark.thiranariTotal > thMax) {
+                val hasComponentError = mark.naney1Oral > oralMax || mark.naney1Activity > actMax || mark.naney1Written > wriMax ||
+                        mark.naney2Oral > oralMax || mark.naney2Activity > actMax || mark.naney2Written > wriMax
+
+                if (mark.naney1Total > n1Max || mark.naney2Total > n2Max || mark.thiranariTotal > thMax || hasComponentError) {
                     outOfBoundsCount++
                     issues.add(
                         ValidationIssue(
                             type = IssueType.ERROR,
                             title = "${subj.tamilName} புதிய பாடத்திட்ட மதிப்பீட்டு பிழை",
-                            description = "நானே செய்வேன் அல்லது திறனறி மதிப்பெண் அதிகபட்ச வரம்பைத் தாண்டியுள்ளது.",
+                            description = if (student.stdClass == 3)
+                                "நானே செய்வேன் மதிப்பெண் வரம்புகள்: வாய்மொழி [5], செயல்பாடு [10], எழுத்துவழி [5] (கூடுதல் 20)."
+                            else
+                                "நானே செய்வேன் அல்லது திறனறி மதிப்பெண் அதிகபட்ச வரம்பைத் தாண்டியுள்ளது.",
                             canAutoFix = true
                         )
                     )
