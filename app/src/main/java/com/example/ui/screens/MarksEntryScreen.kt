@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,8 +28,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Print
@@ -36,6 +39,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.ViewList
+import com.example.ui.dialogs.AiErrorAndGuidanceDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -81,10 +85,16 @@ import com.example.ui.components.ClassChipsSelector
 import com.example.ui.dialogs.TermRankCardDialog
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.BorderSubtle
+import com.example.ui.theme.CardBg
+import com.example.ui.theme.CardBgSubtle
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
 import com.example.ui.theme.Slate50
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextNavy
 import com.example.util.ExcelReportGenerator
 import com.example.util.PdfReportGenerator
 import com.example.viewmodel.MarksInputData
@@ -143,8 +153,8 @@ fun MarksEntryScreen(
         val terms = listOf(1 to "பருவம் 1 (Term 1)", 2 to "பருவம் 2 (Term 2)", 3 to "பருவம் 3 (Term 3)")
         TabRow(
             selectedTabIndex = selectedTerm - 1,
-            containerColor = Color.White,
-            contentColor = NavyPrimary,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth()
         ) {
             terms.forEach { (termNum, termLabel) ->
@@ -165,7 +175,7 @@ fun MarksEntryScreen(
         // View Mode Switch for Class 1-3: மாணவர் வாரியாக / வகுப்புப் பதிவேடு அட்டவணை
         if (selectedClass in 1..3 && classStudents.isNotEmpty()) {
             Surface(
-                color = Color(0xFFF1F5F9),
+                color = CardBgSubtle,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -223,7 +233,7 @@ fun MarksEntryScreen(
             ) {
                 Text(
                     text = "வகுப்பு $selectedClass -ல் மாணவர்கள் பதிவு செய்யப்படவில்லை.\nமுதலில் 'மாணவர் சேர்க்கை' பகுதியில் மாணவர்களை சேர்க்கவும்.",
-                    color = Color.DarkGray,
+                    color = TextMuted,
                     fontSize = 14.sp
                 )
             }
@@ -376,6 +386,7 @@ fun StudentMarkForm(
 ) {
     val subjects = Subject.getSubjectsForClass(student.stdClass)
     val isPrimary = student.stdClass in 1..3
+    val isDark = isSystemInDarkTheme()
 
     val schoolProfile by viewModel.schoolProfile.collectAsState()
     val defaultWorkingDays = schoolProfile.getWorkingDaysForTerm(term)
@@ -383,6 +394,8 @@ fun StudentMarkForm(
     // Working Days & Present Days state initialized from School Profile settings
     var workingDaysStr by remember(student.id, term, defaultWorkingDays) { mutableStateOf(defaultWorkingDays.toString()) }
     var presentDaysStr by remember(student.id, term, defaultWorkingDays) { mutableStateOf(((defaultWorkingDays * 0.95).toInt()).toString()) }
+
+    var showAiGuidanceDialog by remember { mutableStateOf(false) }
 
     var term1Att by remember(student.id, term) { mutableStateOf<com.example.data.model.TermAttendance?>(null) }
     var term2Att by remember(student.id, term) { mutableStateOf<com.example.data.model.TermAttendance?>(null) }
@@ -528,6 +541,22 @@ fun StudentMarkForm(
                             fontSize = 12.sp,
                             color = AmberGold
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = AmberGold,
+                            onClick = { showAiGuidanceDialog = true },
+                            modifier = Modifier.testTag("ai_check_student_chip")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = NavyDark, modifier = Modifier.size(13.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("🤖 AI சரிபார்ப்பு & வழிகாட்டல்", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = NavyDark)
+                            }
+                        }
                     }
 
                     IconButton(
@@ -549,7 +578,7 @@ fun StudentMarkForm(
         item {
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -579,8 +608,8 @@ fun StudentMarkForm(
                     if (term == 2) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFF8FAFC),
-                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            color = CardBgSubtle,
+                            border = BorderStroke(1.dp, BorderSubtle),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 8.dp)
@@ -590,7 +619,7 @@ fun StudentMarkForm(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("முந்தைய பருவம் 1:", fontSize = 11.5.sp, color = Color.DarkGray)
+                                Text("முந்தைய பருவம் 1:", fontSize = 11.5.sp, color = TextDark)
                                 Text(
                                     text = "${term1Att?.presentDays ?: 0} / ${term1Att?.totalWorkingDays ?: 0} நாட்கள்",
                                     fontWeight = FontWeight.Bold,
@@ -602,8 +631,8 @@ fun StudentMarkForm(
                     } else if (term == 3) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFF8FAFC),
-                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            color = CardBgSubtle,
+                            border = BorderStroke(1.dp, BorderSubtle),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 8.dp)
@@ -616,13 +645,13 @@ fun StudentMarkForm(
                                 Text(
                                     text = "பருவம் 1: ${term1Att?.presentDays ?: 0}/${term1Att?.totalWorkingDays ?: 0}",
                                     fontSize = 11.5.sp,
-                                    color = Color.DarkGray,
+                                    color = TextDark,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
                                     text = "பருவம் 2: ${term2Att?.presentDays ?: 0}/${term2Att?.totalWorkingDays ?: 0}",
                                     fontSize = 11.5.sp,
-                                    color = Color.DarkGray,
+                                    color = TextDark,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
@@ -664,6 +693,53 @@ fun StudentMarkForm(
                     val curW = workingDaysStr.toIntOrNull() ?: 0
                     val curP = presentDaysStr.toIntOrNull() ?: 0
 
+                    if (curW > 0 && curP > curW) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isDark) Color(0xFF3B151A) else Color(0xFFFEF2F2),
+                            border = BorderStroke(1.dp, if (isDark) Color(0xFF7F1D1D) else Color(0xFFFCA5A5)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Default.ErrorOutline,
+                                        contentDescription = null,
+                                        tint = Color(0xFFDC2626),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "பிழை: வருகை ($curP) வேலை நாட்களை ($curW) விட அதிகம்!",
+                                        fontSize = 11.5.sp,
+                                        color = if (isDark) Color(0xFFFCA5A5) else Color(0xFFB91C1C),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                TextButton(
+                                    onClick = { presentDaysStr = workingDaysStr },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        "தானாக சரிசெய்",
+                                        fontSize = 11.sp,
+                                        color = if (isDark) Color(0xFFF87171) else Color(0xFFDC2626),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     if (term == 2) {
                         val t1W = term1Att?.totalWorkingDays ?: 0
                         val t1P = term1Att?.presentDays ?: 0
@@ -673,8 +749,8 @@ fun StudentMarkForm(
 
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFEFF6FF),
-                            border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                            color = if (isDark) Color(0xFF1E293B) else Color(0xFFEFF6FF),
+                            border = BorderStroke(1.dp, if (isDark) Color(0xFF334155) else Color(0xFFBFDBFE)),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 8.dp)
@@ -688,13 +764,13 @@ fun StudentMarkForm(
                                     text = "பருவம் 1 + 2 கூடுதல் வருகை:",
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = NavyDark
+                                    color = if (isDark) TextDark else NavyDark
                                 )
                                 Text(
                                     text = "$cumP / $cumW நாட்கள் (${String.format("%.1f%%", cumPct)})",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.5.sp,
-                                    color = NavyPrimary
+                                    color = if (isDark) AmberGold else NavyPrimary
                                 )
                             }
                         }
@@ -709,8 +785,8 @@ fun StudentMarkForm(
 
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFEFF6FF),
-                            border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                            color = if (isDark) Color(0xFF1E293B) else Color(0xFFEFF6FF),
+                            border = BorderStroke(1.dp, if (isDark) Color(0xFF334155) else Color(0xFFBFDBFE)),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 8.dp)
@@ -724,13 +800,13 @@ fun StudentMarkForm(
                                     text = "1, 2, 3 ஆம் பருவங்கள் ஆண்டு மொத்தம்:",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.5.sp,
-                                    color = NavyDark
+                                    color = if (isDark) TextDark else NavyDark
                                 )
                                 Text(
                                     text = "$yearP / $yearW நாட்கள் (${String.format("%.1f%%", yearPct)})",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.5.sp,
-                                    color = NavyPrimary
+                                    color = if (isDark) AmberGold else NavyPrimary
                                 )
                             }
                         }
@@ -747,8 +823,8 @@ fun StudentMarkForm(
             if (isPe) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFFFEF3C7),
-                    border = BorderStroke(1.dp, Color(0xFFFCD34D)),
+                    color = if (isDark) Color(0xFF2A1F0D) else Color(0xFFFEF3C7),
+                    border = BorderStroke(1.dp, if (isDark) Color(0xFF5C4312) else Color(0xFFFCD34D)),
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp)
                 ) {
                     Row(
@@ -759,7 +835,7 @@ fun StudentMarkForm(
                             text = "உடற்கல்வி (தனி மதிப்பீடு - முதன்மை 5 பாடங்கள் மொத்தத்தில் சேராது)",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF92400E)
+                            color = if (isDark) Color(0xFFFDE047) else Color(0xFF92400E)
                         )
                     }
                 }
@@ -767,8 +843,8 @@ fun StudentMarkForm(
 
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = if (isPe) Color(0xFFFFFBEB) else Color.White),
-                border = if (isPe) BorderStroke(1.dp, Color(0xFFFDE68A)) else null,
+                colors = CardDefaults.cardColors(containerColor = if (isPe) (if (isDark) Color(0xFF261D11) else Color(0xFFFFFBEB)) else CardBg),
+                border = if (isPe) BorderStroke(1.dp, if (isDark) Color(0xFF78350F) else Color(0xFFFDE68A)) else BorderStroke(1.dp, BorderSubtle),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -1387,7 +1463,8 @@ fun StudentMarkForm(
         item {
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color(0xFFF1F5F9),
+                color = if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9),
+                border = BorderStroke(1.dp, BorderSubtle),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
@@ -1401,13 +1478,13 @@ fun StudentMarkForm(
                                 text = "முதன்மைப் பாடங்கள் மொத்தம்: $grandTotal / $maxMarks",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.5.sp,
-                                color = NavyDark
+                                color = if (isDark) TextDark else NavyDark
                             )
                             Text(
                                 text = "சராசரி: ${String.format("%.1f", percentage)}%" +
                                         (if (hasPe && peTotal != null) " • உடற்கல்வி: $peTotal / 100 (தனி மதிப்பீடு)" else ""),
                                 fontSize = 12.sp,
-                                color = Color.DarkGray
+                                color = TextDark
                             )
                         }
 
@@ -1415,7 +1492,8 @@ fun StudentMarkForm(
                             onClick = {
                                 val w = workingDaysStr.toIntOrNull() ?: 80
                                 val p = presentDaysStr.toIntOrNull() ?: 76
-                                onSave(marksState, w, p)
+                                val clampedP = p.coerceIn(0, maxOf(1, w))
+                                onSave(marksState, w, clampedP)
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = EmeraldPass),
                             shape = RoundedCornerShape(8.dp),
@@ -1437,7 +1515,8 @@ fun StudentMarkForm(
                             onClick = {
                                 val w = workingDaysStr.toIntOrNull() ?: 80
                                 val p = presentDaysStr.toIntOrNull() ?: 76
-                                onSave(marksState, w, p)
+                                val clampedP = p.coerceIn(0, maxOf(1, w))
+                                onSave(marksState, w, clampedP)
                                 onOpenRankCard()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = AmberGold),
@@ -1463,6 +1542,31 @@ fun StudentMarkForm(
                             Text("முழு வகுப்பு தர அட்டைகள்", fontSize = 11.sp, maxLines = 1, color = NavyPrimary)
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = { showAiGuidanceDialog = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isDark) Color(0xFF1E3A8A) else Color(0xFFDBEAFE)
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth().testTag("open_ai_guidance_bottom_btn")
+                    ) {
+                        Icon(
+                            Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = if (isDark) Color(0xFF93C5FD) else NavyPrimary
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            "🤖 AI சரிபார்ப்பு & வழிகாட்டல் (AI Error Check & Guidance)",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = if (isDark) Color(0xFF93C5FD) else NavyPrimary
+                        )
+                    }
                 }
             }
         }
@@ -1474,7 +1578,8 @@ fun StudentMarkForm(
                     onClick = {
                         val w = workingDaysStr.toIntOrNull() ?: 80
                         val p = presentDaysStr.toIntOrNull() ?: 76
-                        onSave(marksState, w, p)
+                        val clampedP = p.coerceIn(0, maxOf(1, w))
+                        onSave(marksState, w, clampedP)
                         onNext()
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -1485,6 +1590,50 @@ fun StudentMarkForm(
             }
             Spacer(modifier = Modifier.height(30.dp))
         }
+    }
+
+    if (showAiGuidanceDialog) {
+        val currentMarksMap = remember(marksState, student.id, term) {
+            marksState.mapValues { (subj, data) ->
+                val calcTotal = if (student.stdClass == 8) {
+                    if (data.directTotal == 0 && data.sa > 0) data.sa else data.directTotal
+                } else if (student.stdClass in 1..3) {
+                    data.calculatedTotal
+                } else {
+                    data.faTotal + data.sa
+                }
+                StudentMarks(
+                    studentId = student.id,
+                    term = term,
+                    subjectKey = subj.key,
+                    faTotal = data.faTotal,
+                    sa = data.sa,
+                    naney1Oral = data.naney1Oral,
+                    naney1Activity = data.naney1Activity,
+                    naney1Written = data.naney1Written,
+                    naney2Oral = data.naney2Oral,
+                    naney2Activity = data.naney2Activity,
+                    naney2Written = data.naney2Written,
+                    thiranariOral = data.thiranariOral,
+                    thiranariWritten = data.thiranariWritten,
+                    total = calcTotal
+                )
+            }
+        }
+
+        AiErrorAndGuidanceDialog(
+            student = student,
+            term = term,
+            workingDays = workingDaysStr.toIntOrNull() ?: 80,
+            presentDays = presentDaysStr.toIntOrNull() ?: 76,
+            marksMap = currentMarksMap,
+            onDismiss = { showAiGuidanceDialog = false },
+            onAutoFixAttendance = { correctedWorking, correctedPresent ->
+                workingDaysStr = correctedWorking.toString()
+                presentDaysStr = correctedPresent.toString()
+                onSave(marksState, correctedWorking, correctedPresent)
+            }
+        )
     }
 }
 
@@ -1646,6 +1795,9 @@ fun Class1To3RegisterTableView(
 
         // Official Register Header & Scrollable Table
         val horizontalScrollState = rememberScrollState()
+        val isDark = isSystemInDarkTheme()
+        val headerLevel1Bg = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+        val headerLevel2Bg = if (isDark) Color(0xFF334155) else Color(0xFFF1F5F9)
 
         LazyColumn(
             modifier = Modifier
@@ -1657,7 +1809,7 @@ fun Class1To3RegisterTableView(
             item {
                 Card(
                     shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = CardBg),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(
@@ -1670,7 +1822,7 @@ fun Class1To3RegisterTableView(
                             text = schoolProfile.schoolName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
-                            color = NavyPrimary
+                            color = TextNavy
                         )
                         Text(
                             text = "2026-27 மாணவர் மதிப்பெண் பதிவேடு பருவம் : $term",
@@ -1682,7 +1834,7 @@ fun Class1To3RegisterTableView(
                             text = "புதிய பாடத்திட்டம் வகுப்பு : $stdClass     பாடம் : ${selectedSubject.tamilName} (${selectedSubject.name})",
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 12.sp,
-                            color = Color(0xFF1E3A8A)
+                            color = TextNavy
                         )
                     }
                 }
@@ -1708,7 +1860,7 @@ fun Class1To3RegisterTableView(
             item {
                 Card(
                     shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = CardBg),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
@@ -1719,43 +1871,43 @@ fun Class1To3RegisterTableView(
                         // Header Level 1 (Top Categories)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.background(Color(0xFFE2E8F0))
+                            modifier = Modifier.background(headerLevel1Bg)
                         ) {
-                            RegisterCell("வ.எண்", 50, Color.Black, FontWeight.Bold)
-                            RegisterCell("சேர்க்கை எண்", 90, Color.Black, FontWeight.Bold)
-                            RegisterCell("மாணவர் பெயர்", 140, Color.Black, FontWeight.Bold)
-                            RegisterCell(n1Label, 240, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFEE2E2))
-                            RegisterCell(n2Label, 240, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFEE2E2))
-                            RegisterCell(thLabel, 170, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEF3C7))
-                            RegisterCell("மொத்தம்", 70, Color.Black, FontWeight.Bold, Color(0xFFE2E8F0))
-                            RegisterCell("விழுக்காடு", 70, Color.Black, FontWeight.Bold, Color(0xFFE2E8F0))
+                            RegisterCell("வ.எண்", 50, TextDark, FontWeight.Bold)
+                            RegisterCell("சேர்க்கை எண்", 90, TextDark, FontWeight.Bold)
+                            RegisterCell("மாணவர் பெயர்", 140, TextDark, FontWeight.Bold)
+                            RegisterCell(n1Label, 240, Color(0xFFF87171), FontWeight.Bold, if (isDark) Color(0xFF7F1D1D).copy(alpha = 0.35f) else Color(0xFFFEE2E2))
+                            RegisterCell(n2Label, 240, Color(0xFFF87171), FontWeight.Bold, if (isDark) Color(0xFF7F1D1D).copy(alpha = 0.35f) else Color(0xFFFEE2E2))
+                            RegisterCell(thLabel, 170, Color(0xFFFBBF24), FontWeight.Bold, if (isDark) Color(0xFF78350F).copy(alpha = 0.35f) else Color(0xFFFEF3C7))
+                            RegisterCell("மொத்தம்", 70, TextDark, FontWeight.Bold, if (isDark) Color(0xFF334155) else Color(0xFFE2E8F0))
+                            RegisterCell("விழுக்காடு", 70, TextDark, FontWeight.Bold, if (isDark) Color(0xFF334155) else Color(0xFFE2E8F0))
                         }
 
                         // Header Level 2 (Sub-columns)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.background(Color(0xFFF1F5F9))
+                            modifier = Modifier.background(headerLevel2Bg)
                         ) {
                             RegisterCell("", 50)
                             RegisterCell("", 90)
                             RegisterCell("", 140)
 
                             // Naney 1 sub-columns
-                            RegisterCell("வாய்மொழி\n[$n1OralMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
-                            RegisterCell("செயல்பாடு\n[$n1ActMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
-                            RegisterCell("எழுத்து\n[$n1WriMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
+                            RegisterCell("வாய்மொழி\n[$n1OralMax]", 80, Color(0xFFF87171), FontWeight.Bold, if (isDark) Color(0xFF450A0A) else Color(0xFFFFF1F2))
+                            RegisterCell("செயல்பாடு\n[$n1ActMax]", 80, Color(0xFFF87171), FontWeight.Bold, if (isDark) Color(0xFF450A0A) else Color(0xFFFFF1F2))
+                            RegisterCell("எழுத்து\n[$n1WriMax]", 80, Color(0xFFF87171), FontWeight.Bold, if (isDark) Color(0xFF450A0A) else Color(0xFFFFF1F2))
 
                             // Naney 2 sub-columns
-                            RegisterCell("வாய்மொழி\n[$n2OralMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
-                            RegisterCell("செயல்பாடு\n[$n2ActMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
-                            RegisterCell("எழுத்து\n[$n2WriMax]", 80, Color(0xFF991B1B), FontWeight.Bold, Color(0xFFFFF1F2))
+                            RegisterCell("வாய்மொழி\n[$n2OralMax]", 80, Color(0xFFF87171), FontWeight.Bold, if (isDark) Color(0xFF450A0A) else Color(0xFFFFF1F2))
+                            RegisterCell("செயல்பாடு\n[$n2ActMax]", 80, Color(0xFFF87171), FontWeight.Bold, if (isDark) Color(0xFF450A0A) else Color(0xFFFFF1F2))
+                            RegisterCell("எழுத்து\n[$n2WriMax]", 80, Color(0xFFF87171), FontWeight.Bold, if (isDark) Color(0xFF450A0A) else Color(0xFFFFF1F2))
 
                             // Thiranari sub-columns
-                            RegisterCell("வாய்மொழி\n[$thOralMax]", 85, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEFCE8))
-                            RegisterCell("எழுத்து\n[$thWriMax]", 85, Color(0xFF92400E), FontWeight.Bold, Color(0xFFFEFCE8))
+                            RegisterCell("வாய்மொழி\n[$thOralMax]", 85, Color(0xFFFBBF24), FontWeight.Bold, if (isDark) Color(0xFF451A03) else Color(0xFFFEFCE8))
+                            RegisterCell("எழுத்து\n[$thWriMax]", 85, Color(0xFFFBBF24), FontWeight.Bold, if (isDark) Color(0xFF451A03) else Color(0xFFFEFCE8))
 
-                            RegisterCell("100", 70, Color.Black, FontWeight.Bold)
-                            RegisterCell("%", 70, Color.Black, FontWeight.Bold)
+                            RegisterCell("100", 70, TextDark, FontWeight.Bold)
+                            RegisterCell("%", 70, TextDark, FontWeight.Bold)
                         }
 
                         // Student Rows
@@ -1771,7 +1923,11 @@ fun Class1To3RegisterTableView(
                             val thWri = currentInput.thiranariWritten
                             val total = n1Oral + n1Act + n1Wri + n2Oral + n2Act + n2Wri + thOral + thWri
 
-                            val rowBg = if (index % 2 == 0) Color.White else Color(0xFFF8FAFC)
+                            val rowBg = if (isDark) {
+                                if (index % 2 == 0) Color(0xFF1E293B) else Color(0xFF0F172A)
+                            } else {
+                                if (index % 2 == 0) Color.White else Color(0xFFF8FAFC)
+                            }
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -1812,8 +1968,8 @@ fun Class1To3RegisterTableView(
                                 }
 
                                 // Calculated Total & %
-                                RegisterCell("$total", 70, Color.Black, FontWeight.Bold)
-                                RegisterCell("$total%", 70, Color.Black, FontWeight.Bold)
+                                RegisterCell("$total", 70, TextDark, FontWeight.Bold)
+                                RegisterCell("$total%", 70, TextDark, FontWeight.Bold)
                             }
                         }
                     }
@@ -1831,7 +1987,7 @@ fun Class1To3RegisterTableView(
 private fun RegisterCell(
     text: String,
     widthDp: Int,
-    textColor: Color = Color.Black,
+    textColor: Color = TextDark,
     fontWeight: FontWeight = FontWeight.Normal,
     bgColor: Color = Color.Transparent,
     alignLeft: Boolean = false

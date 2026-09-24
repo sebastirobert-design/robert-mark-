@@ -55,9 +55,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.BorderSubtle
+import com.example.ui.theme.CardBg
+import com.example.ui.theme.CardBgSubtle
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
 
 data class GuideSection(
     val title: String,
@@ -110,12 +115,12 @@ fun UserGuideDialog(
             ),
             GuideSection(
                 title = "4. முப்பருவ சராசரி பட்டியல் (Consolidation)",
-                subtitle = "4 பிரிவுகள் ஒருங்கிணைந்த Excel CSV & PDF அச்சிடுதல்",
+                subtitle = "வகுப்புகள் 1,2 • 3,4,5 • 6,7 • 8 ஒருங்கிணைந்த Excel & PDF",
                 icon = Icons.Default.Assessment,
                 color = NavyPrimary,
                 points = listOf(
-                    "முப்பருவப் பிரிவு வாரியாக (1-3, 4-5, 6-7, 8) மற்றும் தனி வகுப்பு வாரியாக (1 முதல் 8) மதிப்பெண் பட்டியலைப் பார்க்கலாம்.",
-                    "ஒருங்கிணைந்த 4 பிரிவுகள் (1-3: 300 மதிப்பெண்கள், 4-5: 500 மதிப்பெண்கள், 6-7: 500 மதிப்பெண்கள், 8: 500+PE): ஒவ்வொரு பிரிவுக்கும் தனித்தனி ஒருங்கிணைந்த Excel (CSV) மற்றும் PDF பதிவேடு அச்சிடும் வசதி உள்ளது.",
+                    "வகுப்புகள் வாரியாக (1,2 • 3,4,5 • 6,7 • 8) மற்றும் தனி வகுப்பு வாரியாக (1 முதல் 8) மதிப்பெண் பட்டியலைப் பார்க்கலாம்.",
+                    "ஒருங்கிணைந்த வகுப்புகள் (1,2: 400 மதிப்பெண்கள், 3,4,5: 500 மதிப்பெண்கள், 6,7: 500 மதிப்பெண்கள், 8: 500+PE): ஒவ்வொரு வகுப்புக் குழுவிற்கும் தனித்தனி ஒருங்கிணைந்த Excel (CSV) மற்றும் PDF பதிவேடு அச்சிடும் வசதி உள்ளது.",
                     "Excel (CSV) பதிவிறக்கம்: அனைத்து மாணவர்களின் மதிப்பெண்களையும் கணினியில் பயன்படுத்தும் வகையில் CSV வடிவில் பதிவிறக்கலாம்.",
                     "PDF பதிவேடு அச்சிடுதல்: தமிழ்நாடு அரசு பள்ளி கல்வித்துறை படிவ அமைப்பில் நேரடி அச்சுக்கு உகந்த PDF பதிவேட்டைத் தயாரித்துக் கொள்ளலாம்.",
                     "A4 அட்டைகள் (Rank Cards): பருவம் 1, 2, 3-இல் ஒரு A4 தாளில் இரண்டு மாணவர்களின் தரவரிசை அறிக்கையை அச்சு எடுக்கலாம்.",
@@ -153,7 +158,7 @@ fun UserGuideDialog(
     ) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = CardBg),
             modifier = Modifier
                 .fillMaxWidth(0.94f)
                 .fillMaxHeight(0.88f)
@@ -218,8 +223,8 @@ fun UserGuideDialog(
 
                 // Quick Note Banner
                 Surface(
-                    color = Color(0xFFF1F5F9),
-                    border = BorderStroke(0.5.dp, Color(0xFFCBD5E1)),
+                    color = CardBgSubtle,
+                    border = BorderStroke(0.5.dp, BorderSubtle),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -249,11 +254,11 @@ fun UserGuideDialog(
                         Card(
                             shape = RoundedCornerShape(10.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = if (isExpanded) section.color.copy(alpha = 0.04f) else Color.White
+                                containerColor = if (isExpanded) section.color.copy(alpha = 0.1f) else CardBg
                             ),
                             border = BorderStroke(
                                 1.dp,
-                                if (isExpanded) section.color.copy(alpha = 0.4f) else Color(0xFFE2E8F0)
+                                if (isExpanded) section.color.copy(alpha = 0.5f) else BorderSubtle
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -296,7 +301,7 @@ fun UserGuideDialog(
                                             Text(
                                                 text = section.subtitle,
                                                 fontSize = 11.sp,
-                                                color = Color.Gray
+                                                color = TextMuted
                                             )
                                         }
                                     }
@@ -304,7 +309,7 @@ fun UserGuideDialog(
                                     Icon(
                                         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                                         contentDescription = null,
-                                        tint = if (isExpanded) section.color else Color.Gray,
+                                        tint = if (isExpanded) section.color else TextMuted,
                                         modifier = Modifier.size(22.dp)
                                     )
                                 }
@@ -329,7 +334,7 @@ fun UserGuideDialog(
                                                 Text(
                                                     text = point,
                                                     fontSize = 12.sp,
-                                                    color = Color(0xFF1E293B),
+                                                    color = TextDark,
                                                     lineHeight = 17.sp
                                                 )
                                             }
@@ -343,8 +348,8 @@ fun UserGuideDialog(
 
                 // Footer Close Button
                 Surface(
-                    color = Color(0xFFF8FAFC),
-                    border = BorderStroke(0.5.dp, Color(0xFFE2E8F0)),
+                    color = CardBgSubtle,
+                    border = BorderStroke(0.5.dp, BorderSubtle),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(

@@ -56,11 +56,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.ui.dialogs.UserGuideDialog
+import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.CardBg
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextNavy
 import com.example.util.BackupRestoreManager
 import com.example.viewmodel.SchoolMarksViewModel
 import java.io.File
@@ -81,23 +87,15 @@ fun SchoolSettingsScreen(
     var academicYear by remember(schoolProfile) { mutableStateOf(schoolProfile.academicYear) }
     var headmasterName by remember(schoolProfile) { mutableStateOf(schoolProfile.headmasterName) }
 
-    // Term working days states - default to term 1 only if others are 0
-    var term1DaysStr by remember(schoolProfile) {
-        mutableStateOf(if (schoolProfile.term1WorkingDays > 0) schoolProfile.term1WorkingDays.toString() else "80")
+    // Unified school working days (பள்ளி வேலை நாட்கள் - ஒரே கட்டம்)
+    val initialDays = if (schoolProfile.term1WorkingDays > 0) schoolProfile.term1WorkingDays.toString()
+        else if (schoolProfile.term2WorkingDays > 0) schoolProfile.term2WorkingDays.toString()
+        else if (schoolProfile.term3WorkingDays > 0) schoolProfile.term3WorkingDays.toString()
+        else "78"
+    var schoolWorkingDaysStr by remember(schoolProfile) {
+        mutableStateOf(initialDays)
     }
-    var term2DaysStr by remember(schoolProfile) {
-        mutableStateOf(if (schoolProfile.term2WorkingDays > 0) schoolProfile.term2WorkingDays.toString() else "")
-    }
-    var term3DaysStr by remember(schoolProfile) {
-        mutableStateOf(if (schoolProfile.term3WorkingDays > 0) schoolProfile.term3WorkingDays.toString() else "")
-    }
-    var workingDaysActiveTerm by remember(schoolProfile) {
-        mutableStateOf(
-            if (schoolProfile.term3WorkingDays > 0) 3
-            else if (schoolProfile.term2WorkingDays > 0) 2
-            else 1
-        )
-    }
+    val schoolWorkingDays = schoolWorkingDaysStr.toIntOrNull() ?: 78
 
     var showApplyWorkingDaysDialog by remember { mutableStateOf(false) }
     var showRestoreConfirmDialog by remember { mutableStateOf(false) }
@@ -124,15 +122,6 @@ fun SchoolSettingsScreen(
                 Toast.makeText(context, "கோப்பைப் படிக்க முடியவில்லை: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
             }
         }
-    }
-
-    val term1Days = term1DaysStr.toIntOrNull() ?: 0
-    val term2Days = if (workingDaysActiveTerm >= 2) (term2DaysStr.toIntOrNull() ?: 0) else 0
-    val term3Days = if (workingDaysActiveTerm >= 3) (term3DaysStr.toIntOrNull() ?: 0) else 0
-    val totalDays = when (workingDaysActiveTerm) {
-        1 -> term1Days
-        2 -> term1Days + term2Days
-        else -> term1Days + term2Days + term3Days
     }
 
     LazyColumn(
@@ -187,9 +176,9 @@ fun SchoolSettingsScreen(
         item {
             Card(
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag("school_profile_section")
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -260,13 +249,13 @@ fun SchoolSettingsScreen(
             }
         }
 
-        // Section 2: School Working Days Setting (பள்ளி வேலை நாட்கள்)
+        // Section 2: School Working Days Setting (பள்ளி வேலை நாட்கள்) - Single unified box
         item {
             Card(
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().testTag("working_days_section")
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -275,13 +264,13 @@ fun SchoolSettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = EmeraldPass.copy(alpha = 0.12f),
+                            color = AcademicBlue.copy(alpha = 0.12f),
                             modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CalendarMonth,
                                 contentDescription = null,
-                                tint = EmeraldPass,
+                                tint = AcademicBlue,
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
@@ -294,274 +283,68 @@ fun SchoolSettingsScreen(
                                 color = NavyDark
                             )
                             Text(
-                                text = "இங்கு உள்ளிட்டால் ஒவ்வொரு மாணவனுக்கும் தனித்தனியே உள்ளிட தேவையில்லை!",
+                                text = "ஒரே பதிவு - உடனடியாக அனைத்து மாணவர்களுக்கும் காட்டப்படும்!",
                                 fontSize = 11.sp,
-                                color = Color.Gray
+                                color = TextMuted
                             )
                         }
                     }
 
-                    Text(
-                        text = "உள்ளீடு செய்யும் பருவம்:",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = NavyDark
+                    // Single Input Box for School Working Days
+                    OutlinedTextField(
+                        value = schoolWorkingDaysStr,
+                        onValueChange = { schoolWorkingDaysStr = it.filter { ch -> ch.isDigit() } },
+                        label = { Text("பள்ளி வேலை நாட்கள் (School Working Days)") },
+                        placeholder = { Text("78") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().testTag("input_school_working_days"),
+                        supportingText = {
+                            Text(
+                                text = "எ.கா: ஜூன் to செப்: 78 | ஜூன் to டிச: 155 | ஜூன் to ஏப்: 220",
+                                fontSize = 11.sp,
+                                color = TextMuted
+                            )
+                        }
                     )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    // Helper banner
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = AcademicBlue.copy(alpha = 0.08f),
+                        border = BorderStroke(1.dp, AcademicBlue.copy(alpha = 0.2f)),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        listOf(
-                            1 to "பருவம் 1",
-                            2 to "பருவம் 2",
-                            3 to "பருவம் 3"
-                        ).forEach { (termNum, termLabel) ->
-                            val isSelected = workingDaysActiveTerm == termNum
-                            Button(
-                                onClick = {
-                                    workingDaysActiveTerm = termNum
-                                    if (termNum == 1) {
-                                        term2DaysStr = ""
-                                        term3DaysStr = ""
-                                    } else if (termNum == 2) {
-                                        term3DaysStr = ""
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (isSelected) NavyPrimary else Color(0xFFF1F5F9),
-                                    contentColor = if (isSelected) Color.White else NavyDark
-                                ),
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = termLabel,
-                                    fontSize = 12.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                )
-                            }
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "பள்ளி வேலை நாட்கள்: $schoolWorkingDays நாட்கள்",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.5.sp,
+                                color = TextNavy
+                            )
+                            Text(
+                                text = "இங்கு பதிவிடும் $schoolWorkingDays நாட்கள் அனைத்து மாணவர்களுக்கும் பள்ளி வேலை நாட்களாகக் காட்டப்படும். ஆசிரியர் மதிப்பெண் பதிவில் மாணவர் வருகை நாட்களை மட்டும் பதிவிட்டால் போதும்.",
+                                fontSize = 11.sp,
+                                color = TextMuted,
+                                lineHeight = 15.sp
+                            )
                         }
                     }
 
-                    when (workingDaysActiveTerm) {
-                        1 -> {
-                            // முதல் பருவம் மட்டும் entry செய்யவேண்டும்; மற்ற இரு பருவங்களும் எண்கள் இல்லாமல் இருக்கவேண்டும்
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                OutlinedTextField(
-                                    value = term1DaysStr,
-                                    onValueChange = { term1DaysStr = it.filter { ch -> ch.isDigit() } },
-                                    label = { Text("பருவம் 1") },
-                                    placeholder = { Text("80") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    singleLine = true,
-                                    modifier = Modifier.weight(1f).testTag("input_term1_working_days")
-                                )
-
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = Color(0xFFF8FAFC),
-                                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text("பருவம் 2", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text("—", fontSize = 16.sp, color = Color.LightGray, fontWeight = FontWeight.Bold)
-                                        Text("எண்கள் இல்லை", fontSize = 9.5.sp, color = Color.Gray)
-                                    }
-                                }
-
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = Color(0xFFF8FAFC),
-                                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text("பருவம் 3", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text("—", fontSize = 16.sp, color = Color.LightGray, fontWeight = FontWeight.Bold)
-                                        Text("எண்கள் இல்லை", fontSize = 9.5.sp, color = Color.Gray)
-                                    }
-                                }
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFEFF6FF),
-                                border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "பருவம் 1 வேலை நாட்கள்:",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
-                                        color = NavyDark
-                                    )
-                                    Text(
-                                        text = "$term1Days நாட்கள்",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
-                                        color = NavyPrimary
-                                    )
-                                }
-                            }
-                        }
-                        2 -> {
-                            // இரண்டாம் பருவம் என்ட்ரி செய்யும்போது முதல் பருவம் மற்றும் இரண்டாம் பருவம் display ஆகவேண்டும்
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                OutlinedTextField(
-                                    value = term1DaysStr,
-                                    onValueChange = { term1DaysStr = it.filter { ch -> ch.isDigit() } },
-                                    label = { Text("பருவம் 1") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    singleLine = true,
-                                    modifier = Modifier.weight(1f).testTag("input_term1_working_days")
-                                )
-
-                                OutlinedTextField(
-                                    value = term2DaysStr,
-                                    onValueChange = { term2DaysStr = it.filter { ch -> ch.isDigit() } },
-                                    label = { Text("பருவம் 2") },
-                                    placeholder = { Text("80") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    singleLine = true,
-                                    modifier = Modifier.weight(1f).testTag("input_term2_working_days")
-                                )
-
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = Color(0xFFF8FAFC),
-                                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text("பருவம் 3", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
-                                        Spacer(modifier = Modifier.height(2.dp))
-                                        Text("—", fontSize = 16.sp, color = Color.LightGray, fontWeight = FontWeight.Bold)
-                                        Text("எண்கள் இல்லை", fontSize = 9.5.sp, color = Color.Gray)
-                                    }
-                                }
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFEFF6FF),
-                                border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "பருவம் 1 & 2 கூடுதல் வேலை நாட்கள்:",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
-                                        color = NavyDark
-                                    )
-                                    Text(
-                                        text = "${term1Days + term2Days} நாட்கள் (பரு 1: $term1Days + பரு 2: $term2Days)",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
-                                        color = NavyPrimary
-                                    )
-                                }
-                            }
-                        }
-                        else -> {
-                            // மூன்றாம் பருவம் என்ட்ரி செய்யும்போது 1,2 3 ஆம் பருவங்கள் டிஸ்ப்ளே ஆகி மொத்தம் தெரியவேண்டும்
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                OutlinedTextField(
-                                    value = term1DaysStr,
-                                    onValueChange = { term1DaysStr = it.filter { ch -> ch.isDigit() } },
-                                    label = { Text("பருவம் 1") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    singleLine = true,
-                                    modifier = Modifier.weight(1f).testTag("input_term1_working_days")
-                                )
-
-                                OutlinedTextField(
-                                    value = term2DaysStr,
-                                    onValueChange = { term2DaysStr = it.filter { ch -> ch.isDigit() } },
-                                    label = { Text("பருவம் 2") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    singleLine = true,
-                                    modifier = Modifier.weight(1f).testTag("input_term2_working_days")
-                                )
-
-                                OutlinedTextField(
-                                    value = term3DaysStr,
-                                    onValueChange = { term3DaysStr = it.filter { ch -> ch.isDigit() } },
-                                    label = { Text("பருவம் 3") },
-                                    placeholder = { Text("60") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    singleLine = true,
-                                    modifier = Modifier.weight(1f).testTag("input_term3_working_days")
-                                )
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFEFF6FF),
-                                border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "ஆண்டு மொத்த வேலை நாட்கள்:",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
-                                        color = NavyDark
-                                    )
-                                    Text(
-                                        text = "$totalDays நாட்கள் (பரு 1: $term1Days + பரு 2: $term2Days + பரு 3: $term3Days)",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
-                                        color = NavyPrimary
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Button to apply to all students
-                    OutlinedButton(
-                        onClick = { showApplyWorkingDaysDialog = true },
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = EmeraldPass),
-                        border = BorderStroke(1.2.dp, EmeraldPass),
+                    // Button to apply to all students immediately
+                    Button(
+                        onClick = {
+                            viewModel.applySchoolWorkingDaysToAllStudents(schoolWorkingDays)
+                            Toast.makeText(
+                                context,
+                                "அனைத்து ${allStudents.size} மாணவர்களுக்கும் $schoolWorkingDays வேலை நாட்கள் பொருத்தப்பட்டன!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPass),
                         shape = RoundedCornerShape(10.dp),
                         modifier = Modifier.fillMaxWidth().testTag("apply_working_days_all_btn")
                     ) {
@@ -577,18 +360,20 @@ fun SchoolSettingsScreen(
                     // Save settings button
                     Button(
                         onClick = {
-                            viewModel.updateSchoolProfile(
+                            viewModel.updateSchoolProfileAndApplyWorkingDays(
                                 schoolName = schoolName,
                                 udiseCode = udiseCode,
                                 unionName = unionName,
                                 districtName = districtName,
                                 academicYear = academicYear,
                                 headmasterName = headmasterName,
-                                term1WorkingDays = term1Days,
-                                term2WorkingDays = term2Days,
-                                term3WorkingDays = term3Days
+                                schoolWorkingDays = schoolWorkingDays
                             )
-                            Toast.makeText(context, "பள்ளி விவரங்கள் & வேலை நாட்கள் சேமிக்கப்பட்டன!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "பள்ளி விவரங்கள் & அனைத்து மாணவர்களுக்கும் ($schoolWorkingDays) வேலை நாட்கள் சேமிக்கப்பட்டன!",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = NavyPrimary),
                         shape = RoundedCornerShape(10.dp),
@@ -606,7 +391,7 @@ fun SchoolSettingsScreen(
         item {
             Card(
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -633,12 +418,12 @@ fun SchoolSettingsScreen(
                                 text = "ஒட்டு மொத்த Backup & Restore",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = NavyDark
+                                color = TextNavy
                             )
                             Text(
                                 text = "அனைத்து வகுப்புகள், மாணவர்கள், மதிப்பெண்கள், வருகை & அமைப்புகள் காப்புநகல்",
                                 fontSize = 11.sp,
-                                color = Color.Gray
+                                color = TextMuted
                             )
                         }
                     }
@@ -646,7 +431,7 @@ fun SchoolSettingsScreen(
                     Text(
                         text = "மொத்த மாணவர்கள்: ${allStudents.size} பேர் • கல்வி ஆண்டு: ${schoolProfile.academicYear}",
                         fontSize = 12.sp,
-                        color = Color.DarkGray,
+                        color = TextDark,
                         fontWeight = FontWeight.Medium
                     )
 
@@ -691,10 +476,14 @@ fun SchoolSettingsScreen(
                     }
 
                     if (lastExportedFile != null) {
+                        val isDark = isSystemInDarkTheme()
+                        val backupInfoBg = if (isDark) Color(0xFF064E3B).copy(alpha = 0.35f) else Color(0xFFF0FDF4)
+                        val backupInfoBorder = if (isDark) Color(0xFF065F46) else Color(0xFFBBF7D0)
+
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFF0FDF4),
-                            border = BorderStroke(1.dp, Color(0xFFBBF7D0)),
+                            color = backupInfoBg,
+                            border = BorderStroke(1.dp, backupInfoBorder),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -712,7 +501,7 @@ fun SchoolSettingsScreen(
                                     Text(
                                         text = lastExportedFile?.name ?: "",
                                         fontSize = 10.5.sp,
-                                        color = Color.DarkGray
+                                        color = TextDark
                                     )
                                 }
                                 OutlinedButton(
@@ -737,7 +526,7 @@ fun SchoolSettingsScreen(
         item {
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -761,12 +550,12 @@ fun SchoolSettingsScreen(
                                 text = "பயனர் வழிகாட்டி (User Guide)",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = NavyDark
+                                color = TextNavy
                             )
                             Text(
                                 text = "செயலியின் அனைத்து விதிகள் மற்றும் பயன்பாட்டு கையேடு",
                                 fontSize = 11.5.sp,
-                                color = Color.Gray
+                                color = TextMuted
                             )
                         }
                     }
@@ -802,14 +591,8 @@ fun SchoolSettingsScreen(
                 }
             },
             text = {
-                val stageDetails = when (workingDaysActiveTerm) {
-                    1 -> "• பருவம் 1: $term1Days நாட்கள்"
-                    2 -> "• பருவம் 1: $term1Days நாட்கள்\n• பருவம் 2: $term2Days நாட்கள்\n• கூடுதல்: ${term1Days + term2Days} நாட்கள்"
-                    else -> "• பருவம் 1: $term1Days நாட்கள்\n• பருவம் 2: $term2Days நாட்கள்\n• பருவம் 3: $term3Days நாட்கள்\n• ஆண்டு மொத்தம்: $totalDays நாட்கள்"
-                }
                 Text(
-                    text = "அனைத்து ${allStudents.size} மாணவர்களுக்கும் கீழ்க்கண்ட வேலை நாட்கள் தானாகப் பொருத்தப்படும்:\n\n" +
-                            "$stageDetails\n\n" +
+                    text = "அனைத்து ${allStudents.size} மாணவர்களுக்கும் $schoolWorkingDays பள்ளி வேலை நாட்கள் தானாகப் பொருத்தப்படும்.\n\n" +
                             "(மாணவர்களின் வருகை நாட்கள் பத்திரமாக பாதுகாக்கப்படும். உறுதி செய்கிறீர்களா?)",
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -819,8 +602,8 @@ fun SchoolSettingsScreen(
                 Button(
                     onClick = {
                         showApplyWorkingDaysDialog = false
-                        viewModel.applyWorkingDaysToAllStudents(term1Days, term2Days, term3Days) {
-                            Toast.makeText(context, "அனைத்து மாணவர்களுக்கும் வேலை நாட்கள் வெற்றிகரமாக பொருத்தப்பட்டன!", Toast.LENGTH_LONG).show()
+                        viewModel.applySchoolWorkingDaysToAllStudents(schoolWorkingDays) {
+                            Toast.makeText(context, "அனைத்து மாணவர்களுக்கும் $schoolWorkingDays வேலை நாட்கள் வெற்றிகரமாக பொருத்தப்பட்டன!", Toast.LENGTH_LONG).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = EmeraldPass)

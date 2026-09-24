@@ -60,9 +60,13 @@ import com.example.ui.components.SchoolBannerCard
 import com.example.ui.dialogs.UserGuideDialog
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.CardBg
+import com.example.ui.theme.CardBgSubtle
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
 import com.example.util.ExcelReportGenerator
 import com.example.util.PdfReportGenerator
 import com.example.viewmodel.SchoolMarksViewModel
@@ -202,7 +206,7 @@ fun DashboardScreen(
         item {
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -231,7 +235,7 @@ fun DashboardScreen(
                             Text(
                                 text = "வகுப்பு $selectedClass முப்பருவ சராசரி அறிக்கை",
                                 fontSize = 11.sp,
-                                color = Color.Gray
+                                color = TextMuted
                             )
                         }
                     }
@@ -296,7 +300,7 @@ fun DashboardScreen(
         item {
             Card(
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                colors = CardDefaults.cardColors(containerColor = CardBgSubtle),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
@@ -304,7 +308,7 @@ fun DashboardScreen(
                         Icon(Icons.Default.Groups, contentDescription = null, tint = NavyPrimary, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "முப்பருவப் பிரிவுகள் (CCE வழிகாட்டுதல்):",
+                            text = "வகுப்புகள் (CCE வழிகாட்டுதல்):",
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.5.sp,
                             color = NavyDark
@@ -314,25 +318,25 @@ fun DashboardScreen(
                     Text(
                         text = "1. வகுப்பு 1, 2: 4 பாடங்கள் - தமிழ், ஆங்கிலம், கணிதம், சூழ்நிலையியல் (மொத்தம் 400 மதிப்பெண்கள்).",
                         fontSize = 11.5.sp,
-                        color = Color.DarkGray
+                        color = TextDark
                     )
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = "2. வகுப்பு 3, 4, 5: 5 பாடங்கள் - தமிழ், ஆங்கிலம், கணிதம், அறிவியல், சமூக அறிவியல் (மொத்தம் 500 மதிப்பெண்கள்).",
                         fontSize = 11.5.sp,
-                        color = Color.DarkGray
+                        color = TextDark
                     )
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = "3. வகுப்பு 6, 7: 5 முதன்மைப் பாடங்கள் (மொத்தம் 500 மதிப்பெண்கள்).",
                         fontSize = 11.5.sp,
-                        color = Color.DarkGray
+                        color = TextDark
                     )
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = "4. வகுப்பு 8: 5 முதன்மைப் பாடங்கள் (நேரடி 100 மதிப்பெண், மொத்தம் 500) + உடற்கல்வி மற்றும் ஆண்டு இறுதி சான்றிதழ்.",
                         fontSize = 11.5.sp,
-                        color = Color.DarkGray
+                        color = TextDark
                     )
                 }
             }
@@ -356,7 +360,7 @@ fun QuickActionCard(
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
         modifier = modifier
             .testTag(testTag)
@@ -389,7 +393,7 @@ fun QuickActionCard(
                 Text(
                     text = subtitle,
                     fontSize = 10.sp,
-                    color = Color.Gray
+                    color = TextMuted
                 )
             }
         }

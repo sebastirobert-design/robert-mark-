@@ -150,4 +150,29 @@ class SchoolRepository(private val database: AppDatabase) {
             attendanceDao.insertOrUpdateAttendanceList(updatedList)
         }
     }
+
+    suspend fun applySchoolWorkingDaysToAllStudents(workingDays: Int) {
+        if (workingDays <= 0) return
+        val students = studentDao.getAllStudentsOnce()
+        val allAtt = attendanceDao.getAllAttendanceOnce()
+        val attMap = allAtt.groupBy { it.studentId }
+        val updatedList = mutableListOf<TermAttendance>()
+
+        for (st in students) {
+            val studentAtts = attMap[st.id] ?: emptyList()
+            for (t in 1..3) {
+                val existing = studentAtts.find { it.term == t }
+                if (existing != null) {
+                    val newPresent = existing.presentDays.coerceAtMost(workingDays)
+                    updatedList.add(existing.copy(totalWorkingDays = workingDays, presentDays = newPresent))
+                } else {
+                    val defaultPresent = (workingDays * 0.95).toInt().coerceAtMost(workingDays)
+                    updatedList.add(TermAttendance(studentId = st.id, term = t, totalWorkingDays = workingDays, presentDays = defaultPresent))
+                }
+            }
+        }
+        if (updatedList.isNotEmpty()) {
+            attendanceDao.insertOrUpdateAttendanceList(updatedList)
+        }
+    }
 }

@@ -150,7 +150,7 @@ fun MainAppScreen(viewModel: SchoolMarksViewModel) {
         },
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 6.dp
             ) {
                 val navItems = listOf(
@@ -182,11 +182,11 @@ fun MainAppScreen(viewModel: SchoolMarksViewModel) {
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = NavyPrimary,
-                            selectedTextColor = NavyPrimary,
-                            indicatorColor = NavyPrimary.copy(alpha = 0.12f),
-                            unselectedIconColor = Color.Gray,
-                            unselectedTextColor = Color.Gray
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         modifier = Modifier.testTag("nav_item_${dest.name.lowercase()}")
                     )

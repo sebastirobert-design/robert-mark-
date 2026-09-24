@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,9 +63,15 @@ import androidx.compose.ui.unit.sp
 import com.example.data.model.Student
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.BorderSubtle
+import com.example.ui.theme.CardBg
+import com.example.ui.theme.CardBgSubtle
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextNavy
 import com.example.util.PdfReportGenerator
 import com.example.viewmodel.SchoolMarksViewModel
 import java.text.SimpleDateFormat
@@ -121,7 +128,7 @@ fun ParentLetterScreen(
         item {
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -151,12 +158,12 @@ fun ParentLetterScreen(
                             text = "பெற்றோர் கூட்ட அழைப்பிதழ் / பொது கடிதம்",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
-                            color = NavyDark
+                            color = TextNavy
                         )
                         Text(
                             text = "ஒவ்வொரு பெற்றோருக்கும் பெயர் குறிப்பிட்டு தானாகவே தனிப்பயனாக்கப்பட்ட PDF கடிதம் உருவாக்கப்படும்.",
                             fontSize = 11.5.sp,
-                            color = Color.Gray
+                            color = TextMuted
                         )
                     }
                 }
@@ -167,7 +174,7 @@ fun ParentLetterScreen(
         item {
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -261,7 +268,7 @@ fun ParentLetterScreen(
         item {
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -325,7 +332,7 @@ fun ParentLetterScreen(
         item {
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -334,7 +341,7 @@ fun ParentLetterScreen(
                         text = "3. கடித விவரங்களை மாற்றியமைக்க (Custom Copy-Paste):",
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
-                        color = NavyDark
+                        color = TextNavy
                     )
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -465,9 +472,14 @@ fun ParentLetterScreen(
 
         // 5. Live Preview Card
         item {
+            val isDark = isSystemInDarkTheme()
+            val previewCardBg = if (isDark) Color(0xFF1E293B) else Color(0xFFFFFBEB)
+            val previewBorder = if (isDark) Color(0xFF78350F) else Color(0xFFFDE68A)
+            val previewRecipientBg = if (isDark) Color(0xFF334155) else Color.White
+
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CardBg),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -476,7 +488,7 @@ fun ParentLetterScreen(
                         text = "4. கடித மாதிரி முன்னோட்டம் (Live Preview):",
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
-                        color = NavyDark
+                        color = TextNavy
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -501,9 +513,9 @@ fun ParentLetterScreen(
                         .replace("{school_name}", schoolProfile.schoolName)
 
                     Surface(
-                        color = Color(0xFFFFFBEB),
+                        color = previewCardBg,
                         shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, Color(0xFFFDE68A)),
+                        border = BorderStroke(1.dp, previewBorder),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
@@ -514,12 +526,12 @@ fun ParentLetterScreen(
                                 text = schoolProfile.schoolName,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
-                                color = NavyPrimary
+                                color = TextNavy
                             )
                             Text(
                                 text = "${schoolProfile.unionName} | ${schoolProfile.districtName}",
                                 fontSize = 10.5.sp,
-                                color = Color.DarkGray
+                                color = TextMuted
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Surface(
@@ -530,7 +542,7 @@ fun ParentLetterScreen(
                                     text = letterTitle,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp,
-                                    color = Color(0xFF92400E),
+                                    color = if (isDark) Color(0xFFFDE68A) else Color(0xFF92400E),
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                 )
                             }
@@ -540,15 +552,15 @@ fun ParentLetterScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("தேதி: $meetingDate", fontSize = 10.5.sp, color = Color.DarkGray)
-                                Text("இடம்: $meetingPlace", fontSize = 10.5.sp, color = Color.DarkGray)
+                                Text("தேதி: $meetingDate", fontSize = 10.5.sp, color = TextDark)
+                                Text("இடம்: $meetingPlace", fontSize = 10.5.sp, color = TextDark)
                             }
                             Spacer(modifier = Modifier.height(6.dp))
 
                             Surface(
-                                color = Color.White,
+                                color = previewRecipientBg,
                                 shape = RoundedCornerShape(4.dp),
-                                border = BorderStroke(0.5.dp, Color.LightGray),
+                                border = BorderStroke(0.5.dp, BorderSubtle),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Column(modifier = Modifier.padding(6.dp)) {
@@ -556,12 +568,12 @@ fun ParentLetterScreen(
                                         text = "பெறுநர்: திரு / திருமதி. $parentName",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 10.5.sp,
-                                        color = Color.Black
+                                        color = TextDark
                                     )
                                     Text(
                                         text = "மாணவர்: ${sampleStudent.name}  |  வகுப்பு: ${sampleStudent.stdClass} - ${sampleStudent.section}",
                                         fontSize = 10.sp,
-                                        color = Color.DarkGray
+                                        color = TextMuted
                                     )
                                 }
                             }
@@ -570,7 +582,7 @@ fun ParentLetterScreen(
                             Text(
                                 text = "மதிப்பிற்குரிய பெற்றோர் அவர்களுக்கு வணக்கம்,\n$previewBody",
                                 fontSize = 11.sp,
-                                color = Color(0xFF1E293B),
+                                color = TextDark,
                                 lineHeight = 16.sp,
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -580,8 +592,8 @@ fun ParentLetterScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("வகுப்பு ஆசிரியர் கையொப்பம்", fontSize = 9.5.sp, color = Color.DarkGray)
-                                Text("தலைமை ஆசிரியர் கையொப்பம்", fontSize = 9.5.sp, color = Color.DarkGray)
+                                Text("வகுப்பு ஆசிரியர் கையொப்பம்", fontSize = 9.5.sp, color = TextDark)
+                                Text("தலைமை ஆசிரியர் கையொப்பம்", fontSize = 9.5.sp, color = TextDark)
                             }
                         }
                     }

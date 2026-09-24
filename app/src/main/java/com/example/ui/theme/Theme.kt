@@ -1,26 +1,34 @@
 package com.example.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme =
   darkColorScheme(
-    primary = AcademicBlue,
+    primary = Color(0xFF90CAF9),
+    onPrimary = Color(0xFF0D1658),
+    primaryContainer = Color(0xFF1E3A8A),
+    onPrimaryContainer = Color(0xFFDBEAFE),
     secondary = AmberGold,
+    onSecondary = Color.Black,
+    secondaryContainer = Color(0xFF78350F),
+    onSecondaryContainer = Color(0xFFFEF3C7),
     tertiary = EmeraldPass,
-    background = Slate900,
-    surface = Slate800,
-    onPrimary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White
+    onTertiary = Color.White,
+    background = Color(0xFF0F172A),
+    onBackground = Color(0xFFF8FAFC),
+    surface = Color(0xFF1E293B),
+    onSurface = Color(0xFFF8FAFC),
+    surfaceVariant = Color(0xFF283548),
+    onSurfaceVariant = Color(0xFFCBD5E1),
+    surfaceContainer = Color(0xFF1E293B),
+    surfaceContainerHigh = Color(0xFF283548),
+    outline = Color(0xFF64748B),
+    outlineVariant = Color(0xFF334155)
   )
 
 private val LightColorScheme =
@@ -28,32 +36,27 @@ private val LightColorScheme =
     primary = NavyPrimary,
     secondary = AcademicBlue,
     tertiary = AmberGold,
-    background = Slate50,
+    background = Color(0xFFF8FAFC),
     surface = Color.White,
+    surfaceVariant = Color(0xFFF1F5F9),
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
-    onBackground = Slate900,
-    onSurface = Slate900
+    onBackground = Color(0xFF0F172A),
+    onSurface = Color(0xFF0F172A),
+    onSurfaceVariant = Color(0xFF334155),
+    outline = Color(0xFFCBD5E1),
+    outlineVariant = Color(0xFFE2E8F0)
   )
 
 @Composable
 fun MyApplicationTheme(
   darkTheme: Boolean = isSystemInDarkTheme(),
-  // Dynamic color is available on Android 12+
-  dynamicColor: Boolean = true,
+  dynamicColor: Boolean = false, // Keep false to ensure strict, high-contrast, beautiful readability in Tamil script
   content: @Composable () -> Unit,
 ) {
-  val colorScheme =
-    when {
-      dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-        val context = LocalContext.current
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-      }
-
-      darkTheme -> DarkColorScheme
-      else -> LightColorScheme
-    }
+  val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
   MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
 }
+

@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,9 +62,15 @@ import com.example.ui.components.ClassChipsSelector
 import com.example.ui.dialogs.TermRankCardDialog
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.BorderSubtle
+import com.example.ui.theme.CardBg
+import com.example.ui.theme.CardBgSubtle
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextNavy
 import com.example.util.PdfReportGenerator
 import com.example.viewmodel.SchoolMarksViewModel
 import java.io.File
@@ -111,14 +118,14 @@ fun CertificateScreen(
             ) {
                 Text(
                     text = "வகுப்பு $selectedClass -ல் மாணவர்கள் பதிவு செய்யப்படவில்லை.",
-                    color = Color.DarkGray,
+                    color = TextMuted,
                     fontSize = 14.sp
                 )
             }
         } else {
             // Student Selection Strip
             Surface(
-                color = Color(0xFFF1F5F9),
+                color = CardBgSubtle,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -328,9 +335,19 @@ fun CertificatePreviewCard(
     record: StudentConsolidatedRecord,
     school: com.example.data.model.SchoolProfile
 ) {
+    val isDark = isSystemInDarkTheme()
+    val tableHeaderBg = if (isDark) Color(0xFF1E293B) else Color(0xFFEEF2FF)
+    val totalRowBg = if (isDark) Color(0xFF334155) else Color(0xFFF1F5F9)
+    val peRowBg = if (isDark) Color(0xFF3B2505) else Color(0xFFFEFCE8)
+    val peBorderColor = if (isDark) Color(0xFF78350F) else Color(0xFFFEF08A)
+    val peTextColor = if (isDark) Color(0xFFFDE68A) else Color(0xFF854D0E)
+    val attendanceBg = if (isDark) Color(0xFF064E3B).copy(alpha = 0.35f) else Color(0xFFF0FDF4)
+    val attendanceBorder = if (isDark) Color(0xFF065F46) else Color(0xFFBBF7D0)
+    val stampBg = if (isDark) Color(0xFF334155) else Color(0xFFE2E8F0)
+
     Card(
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -353,14 +370,14 @@ fun CertificatePreviewCard(
                 )
                 Text(
                     text = school.schoolName,
-                    color = NavyPrimary,
+                    color = TextNavy,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "${school.unionName}, ${school.districtName}",
-                    color = Color.DarkGray,
+                    color = TextMuted,
                     fontSize = 11.5.sp
                 )
 
@@ -368,13 +385,13 @@ fun CertificatePreviewCard(
 
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = NavyPrimary.copy(alpha = 0.08f),
+                    color = NavyPrimary.copy(alpha = 0.15f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         text = if (record.student.stdClass == 8) "எட்டாம் வகுப்பு ஆண்டு மதிப்பெண் சான்றிதழ்"
                         else "வகுப்பு ${record.student.stdClass} ஆண்டு மதிப்பெண் சான்றிதழ்",
-                        color = NavyDark,
+                        color = TextNavy,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.5.sp,
                         textAlign = TextAlign.Center,
@@ -388,22 +405,22 @@ fun CertificatePreviewCard(
             // Student Info Table
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = Color(0xFFF8FAFC),
+                color = CardBgSubtle,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(text = "மாணவர் பெயர்: ${record.student.name}", fontWeight = FontWeight.Bold, fontSize = 12.5.sp, color = NavyDark)
+                        Text(text = "மாணவர் பெயர்: ${record.student.name}", fontWeight = FontWeight.Bold, fontSize = 12.5.sp, color = TextNavy)
                         Text(text = "சேர்க்கை எண்: ${record.student.admissionNo}", fontWeight = FontWeight.Bold, fontSize = 12.5.sp, color = AmberGold)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(text = "வகுப்பு: ${record.student.stdClass} - பிரிவு ${record.student.section}", fontSize = 11.5.sp, color = Color.DarkGray)
-                        Text(text = "கல்வியாண்டு: ${school.academicYear}", fontSize = 11.5.sp, color = Color.DarkGray)
+                        Text(text = "வகுப்பு: ${record.student.stdClass} - பிரிவு ${record.student.section}", fontSize = 11.5.sp, color = TextDark)
+                        Text(text = "கல்வியாண்டு: ${school.academicYear}", fontSize = 11.5.sp, color = TextDark)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         val pName = record.student.parentName.ifEmpty { "-" }
-                        Text(text = "பெற்றோர் பெயர்: $pName", fontSize = 11.5.sp, color = Color.DarkGray)
-                        Text(text = "இனம்: ${record.student.community}", fontSize = 11.5.sp, color = Color.DarkGray)
+                        Text(text = "பெற்றோர் பெயர்: $pName", fontSize = 11.5.sp, color = TextDark)
+                        Text(text = "இனம்: ${record.student.community}", fontSize = 11.5.sp, color = TextDark)
                     }
                 }
             }
@@ -419,16 +436,16 @@ fun CertificatePreviewCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFEEF2FF))
-                    .border(0.5.dp, Color.LightGray)
+                    .background(tableHeaderBg)
+                    .border(0.5.dp, BorderSubtle)
                     .padding(vertical = 7.dp, horizontal = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("வ.எண்", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = NavyDark, textAlign = TextAlign.Center, modifier = Modifier.weight(0.6f))
-                Text("பாடங்கள் (Subjects)", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = NavyDark, modifier = Modifier.weight(2f))
-                Text("முழு மதிப்பெண்", fontWeight = FontWeight.Bold, fontSize = 10.5.sp, color = NavyDark, textAlign = TextAlign.Center, modifier = Modifier.weight(1.1f))
-                Text("முப்பருவ சராசரி", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = NavyDark, textAlign = TextAlign.Center, modifier = Modifier.weight(1.3f))
-                Text("தரம்", fontWeight = FontWeight.Bold, fontSize = 10.5.sp, color = NavyDark, textAlign = TextAlign.Center, modifier = Modifier.weight(0.8f))
+                Text("வ.எண்", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = TextNavy, textAlign = TextAlign.Center, modifier = Modifier.weight(0.6f))
+                Text("பாடங்கள் (Subjects)", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = TextNavy, modifier = Modifier.weight(2f))
+                Text("முழு மதிப்பெண்", fontWeight = FontWeight.Bold, fontSize = 10.5.sp, color = TextNavy, textAlign = TextAlign.Center, modifier = Modifier.weight(1.1f))
+                Text("முப்பருவ சராசரி", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = TextNavy, textAlign = TextAlign.Center, modifier = Modifier.weight(1.3f))
+                Text("தரம்", fontWeight = FontWeight.Bold, fontSize = 10.5.sp, color = TextNavy, textAlign = TextAlign.Center, modifier = Modifier.weight(0.8f))
             }
 
             // 5 Main Academic Subject Rows
@@ -436,18 +453,23 @@ fun CertificatePreviewCard(
                 val sm = record.subjectMarks[sub]
                 val avg = sm?.avgTotal?.toString() ?: "-"
                 val grade = sm?.getGrade(record.student.stdClass) ?: "-"
+                val rowBg = if (isDark) {
+                    if (index % 2 == 1) Color(0xFF1E293B) else Color(0xFF0F172A)
+                } else {
+                    if (index % 2 == 1) Color(0xFFFAFAFA) else Color.White
+                }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(if (index % 2 == 1) Color(0xFFFAFAFA) else Color.White)
-                        .border(0.5.dp, Color(0xFFE2E8F0))
+                        .background(rowBg)
+                        .border(0.5.dp, BorderSubtle)
                         .padding(vertical = 6.dp, horizontal = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("${index + 1}", fontSize = 11.sp, textAlign = TextAlign.Center, modifier = Modifier.weight(0.6f))
-                    Text(sub.tamilName, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, color = Color.Black, modifier = Modifier.weight(2f))
-                    Text("100", fontSize = 11.sp, color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.weight(1.1f))
+                    Text("${index + 1}", fontSize = 11.sp, textAlign = TextAlign.Center, color = TextDark, modifier = Modifier.weight(0.6f))
+                    Text(sub.tamilName, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, color = TextDark, modifier = Modifier.weight(2f))
+                    Text("100", fontSize = 11.sp, color = TextMuted, textAlign = TextAlign.Center, modifier = Modifier.weight(1.1f))
                     Text(avg, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = NavyPrimary, textAlign = TextAlign.Center, modifier = Modifier.weight(1.3f))
                     Text(grade, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AmberGold, textAlign = TextAlign.Center, modifier = Modifier.weight(0.8f))
                 }
@@ -457,15 +479,15 @@ fun CertificatePreviewCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFF1F5F9))
-                    .border(0.5.dp, Color.LightGray)
+                    .background(totalRowBg)
+                    .border(0.5.dp, BorderSubtle)
                     .padding(vertical = 7.dp, horizontal = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("", modifier = Modifier.weight(0.6f))
-                Text("மொத்தம் (TOTAL)", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = NavyDark, modifier = Modifier.weight(2f))
-                Text("${mainSubjects.size * 100}", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = NavyDark, textAlign = TextAlign.Center, modifier = Modifier.weight(1.1f))
-                Text("${record.grandAvgTotal}", fontWeight = FontWeight.Bold, fontSize = 12.5.sp, color = NavyDark, textAlign = TextAlign.Center, modifier = Modifier.weight(1.3f))
+                Text("மொத்தம் (TOTAL)", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = TextNavy, modifier = Modifier.weight(2f))
+                Text("${mainSubjects.size * 100}", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = TextNavy, textAlign = TextAlign.Center, modifier = Modifier.weight(1.1f))
+                Text("${record.grandAvgTotal}", fontWeight = FontWeight.Bold, fontSize = 12.5.sp, color = TextNavy, textAlign = TextAlign.Center, modifier = Modifier.weight(1.3f))
                 Text(record.overallGrade, fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = AmberGold, textAlign = TextAlign.Center, modifier = Modifier.weight(0.8f))
             }
 
@@ -478,12 +500,12 @@ fun CertificatePreviewCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFFFEFCE8))
-                        .border(0.5.dp, Color(0xFFFEF08A))
+                        .background(peRowBg)
+                        .border(0.5.dp, peBorderColor)
                         .padding(vertical = 6.dp, horizontal = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("6", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF854D0E), textAlign = TextAlign.Center, modifier = Modifier.weight(0.6f))
+                    Text("6", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = peTextColor, textAlign = TextAlign.Center, modifier = Modifier.weight(0.6f))
                     Row(
                         modifier = Modifier.weight(2f),
                         verticalAlignment = Alignment.CenterVertically
@@ -492,18 +514,18 @@ fun CertificatePreviewCard(
                             text = Subject.PE.tamilName,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF854D0E)
+                            color = peTextColor
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "(தனி மதிப்பெண்)",
                             fontSize = 9.5.sp,
-                            color = Color(0xFFA16207)
+                            color = peTextColor.copy(alpha = 0.8f)
                         )
                     }
-                    Text("100", fontSize = 11.sp, color = Color(0xFF854D0E), textAlign = TextAlign.Center, modifier = Modifier.weight(1.1f))
-                    Text(peAvg, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF854D0E), textAlign = TextAlign.Center, modifier = Modifier.weight(1.3f))
-                    Text(peGrade, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF854D0E), textAlign = TextAlign.Center, modifier = Modifier.weight(0.8f))
+                    Text("100", fontSize = 11.sp, color = peTextColor, textAlign = TextAlign.Center, modifier = Modifier.weight(1.1f))
+                    Text(peAvg, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = peTextColor, textAlign = TextAlign.Center, modifier = Modifier.weight(1.3f))
+                    Text(peGrade, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = peTextColor, textAlign = TextAlign.Center, modifier = Modifier.weight(0.8f))
                 }
             }
 
@@ -512,22 +534,22 @@ fun CertificatePreviewCard(
             // Attendance & Result
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = Color(0xFFF0FDF4),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFBBF7D0)),
+                color = attendanceBg,
+                border = androidx.compose.foundation.BorderStroke(1.dp, attendanceBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(text = "பள்ளி மொத்த வேலை நாட்கள்:", fontSize = 11.5.sp, color = Color.DarkGray)
-                        Text(text = "${record.totalWorkingDays} நாட்கள்", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = NavyDark)
+                        Text(text = "பள்ளி மொத்த வேலை நாட்கள்:", fontSize = 11.5.sp, color = TextDark)
+                        Text(text = "${record.totalWorkingDays} நாட்கள்", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = TextNavy)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(text = "மாணவர் வருகை புரிந்த நாட்கள்:", fontSize = 11.5.sp, color = Color.DarkGray)
+                        Text(text = "மாணவர் வருகை புரிந்த நாட்கள்:", fontSize = 11.5.sp, color = TextDark)
                         val pct = String.format("%.1f", record.attendancePercentage)
-                        Text(text = "${record.totalPresentDays} நாட்கள் ($pct%)", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = NavyDark)
+                        Text(text = "${record.totalPresentDays} நாட்கள் ($pct%)", fontWeight = FontWeight.Bold, fontSize = 11.5.sp, color = TextNavy)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(text = "ஆண்டு இறுதி முடிவு (Result):", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                        Text(text = "ஆண்டு இறுதி முடிவு (Result):", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextDark)
                         val resColor = if (record.resultStatus == "தேர்ச்சி") EmeraldPass else Color(0xFFDC2626)
                         val resLabel = if (record.resultStatus == "தேர்ச்சி") "தேர்ச்சி (PROMOTED)" else "ஊக்கப்படுத்தல் தேவை"
                         Text(text = resLabel, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = resColor)
@@ -543,27 +565,27 @@ fun CertificatePreviewCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "தேதி: .................", fontSize = 10.5.sp, color = Color.Gray)
+                    Text(text = "தேதி: .................", fontSize = 10.5.sp, color = TextMuted)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "வகுப்பாசிரியர்", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = NavyDark)
+                    Text(text = "வகுப்பாசிரியர்", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextNavy)
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Surface(
                         shape = CircleShape,
-                        color = Color(0xFFE2E8F0),
+                        color = stampBg,
                         modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(text = "முத்திரை", fontSize = 9.sp, color = Color.DarkGray)
+                            Text(text = "முத்திரை", fontSize = 9.sp, color = TextDark)
                         }
                     }
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = school.headmasterName, fontSize = 10.5.sp, color = Color.DarkGray)
+                    Text(text = school.headmasterName, fontSize = 10.5.sp, color = TextDark)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "தலைமை ஆசிரியர்", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = NavyDark)
+                    Text(text = "தலைமை ஆசிரியர்", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextNavy)
                 }
             }
         }

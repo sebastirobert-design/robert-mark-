@@ -93,7 +93,7 @@ fun SchoolBannerCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(NavyDark.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                    .background(Color.Black.copy(alpha = 0.25f), RoundedCornerShape(8.dp))
                     .padding(horizontal = 10.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {

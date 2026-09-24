@@ -57,9 +57,13 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.data.model.Student
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.CardBg
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextNavy
 
 @Composable
 fun ClassPromotionDialog(
@@ -100,7 +104,7 @@ fun ClassPromotionDialog(
                 .fillMaxWidth(0.95f)
                 .testTag("class_promotion_dialog"),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = CardBg),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
@@ -136,18 +140,18 @@ fun ClassPromotionDialog(
                                 text = "மாணவர் வகுப்பு உயர்வு (Promotion)",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
-                                color = NavyDark
+                                color = TextNavy
                             )
                             Text(
                                 text = "மூன்றாம் பருவத் தேர்வு முடிவுகள் அடிப்படையில்",
                                 fontSize = 12.sp,
-                                color = Color.Gray
+                                color = TextMuted
                             )
                         }
                     }
 
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "மூடுக", tint = Color.Gray)
+                        Icon(Icons.Default.Close, contentDescription = "மூடுக", tint = TextMuted)
                     }
                 }
 
@@ -327,7 +331,7 @@ fun ClassPromotionDialog(
                         Text(
                             text = "வகுப்பு 8 மாணவர்களை 'பள்ளி நிறைவு' (Passed Out) என சேமித்து வைக்க",
                             fontSize = 12.sp,
-                            color = Color.DarkGray
+                            color = TextDark
                         )
                     }
                 }

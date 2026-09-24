@@ -30,8 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.CardBg
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
 
 @Composable
 fun ClassChipsSelector(
@@ -71,7 +73,7 @@ fun ClassChipsSelector(
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = NavyPrimary,
                         selectedLabelColor = Color.White,
-                        containerColor = Color.White,
+                        containerColor = CardBg,
                         labelColor = NavyDark
                     ),
                     shape = RoundedCornerShape(10.dp),
@@ -84,19 +86,24 @@ fun ClassChipsSelector(
 
         // Format Description Badge based on selected class
         val (formatTitle, formatDesc, badgeColor) = when (selectedClass) {
-            1, 2, 3 -> Triple(
-                "வகுப்பு 1 - 3 வடிவம் (CCE Primary)",
-                "3 பாடங்கள் (தமிழ், ஆங்கிலம், கணிதம்) • FA(a): 20, FA(b): 20, SA: 60 = மொத்தம் 100 • கற்றல் நிலை: அரும்பு/மொட்டு/மலர்",
+            1, 2 -> Triple(
+                "வகுப்பு 1, 2 வடிவம்",
+                "4 பாடங்கள் (தமிழ், ஆங்கிலம், கணிதம், சூழ்நிலையியல்) • FA(a): 20, FA(b): 20, SA: 60 = மொத்தம் 100 (பருவம் மொத்தம்: 400)",
                 AcademicBlue
             )
-            4, 5, 6, 7 -> Triple(
-                "வகுப்பு 4 - 7 வடிவம் (CCE Upper Primary)",
-                "5 பாடங்கள் (தமிழ், ஆங்கிலம், கணிதம், அறிவியல், சமூக அறிவியல்) • FA: 40, SA: 60 = மொத்தம் 100 (மொத்த மதிப்பெண்: 500)",
+            3, 4, 5 -> Triple(
+                "வகுப்பு 3, 4, 5 வடிவம்",
+                "5 பாடங்கள் (தமிழ், ஆங்கிலம், கணிதம், அறிவியல், சமூக அறிவியல்) • FA: 40, SA: 60 = மொத்தம் 100 (பருவம் மொத்தம்: 500)",
                 AmberGold
             )
+            6, 7 -> Triple(
+                "வகுப்பு 6, 7 வடிவம்",
+                "5 முதன்மைப் பாடங்கள் (தமிழ், ஆங்கிலம், கணிதம், அறிவியல், சமூக அறிவியல்) • மொத்தம் 500 மதிப்பெண்கள்",
+                AcademicBlue
+            )
             else -> Triple(
-                "எட்டாம் வகுப்பு வடிவம் (Class 8 Special CCE)",
-                "5 பாடங்கள் (100 மதிப்பெண் வீதம் மொத்தம் 500) • முப்பருவ சராசரி பட்டியல் & ஆண்டு இறுதி மதிப்பெண் சான்றிதழ் அவுட்புட்",
+                "வகுப்பு 8 வடிவம்",
+                "5 பாடங்கள் (நேரடி 100 மதிப்பெண் வீதம் மொத்தம் 500) • உடற்கல்வி & ஆண்டு இறுதி சான்றிதழ்",
                 NavyPrimary
             )
         }
@@ -127,7 +134,7 @@ fun ClassChipsSelector(
                     Text(
                         text = formatDesc,
                         fontSize = 11.sp,
-                        color = Color.DarkGray,
+                        color = TextDark,
                         lineHeight = 14.sp
                     )
                 }

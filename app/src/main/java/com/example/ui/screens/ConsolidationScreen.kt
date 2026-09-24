@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +23,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.WorkspacePremium
+import com.example.ui.dialogs.AiClassAuditDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -35,6 +38,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -64,9 +68,15 @@ import com.example.ui.components.ClassChipsSelector
 import com.example.ui.dialogs.ClassPromotionDialog
 import com.example.ui.dialogs.TermRankCardDialog
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.BorderSubtle
+import com.example.ui.theme.CardBg
+import com.example.ui.theme.CardBgSubtle
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextNavy
 import com.example.util.ExcelReportGenerator
 import com.example.util.PdfReportGenerator
 import com.example.viewmodel.SchoolMarksViewModel
@@ -131,6 +141,7 @@ fun ConsolidationScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
     val schoolProfile by viewModel.schoolProfile.collectAsState()
     val selectedClass by viewModel.selectedClass.collectAsState()
     val allStudents by viewModel.allStudents.collectAsState()
@@ -148,6 +159,7 @@ fun ConsolidationScreen(
 
     var showPromotionDialog by remember { mutableStateOf(false) }
     var showRankCardDialog by remember { mutableStateOf(false) }
+    var showAiClassAuditDialog by remember { mutableStateOf(false) }
     var selectedRankCardRecord by remember { mutableStateOf<StudentConsolidatedRecord?>(null) }
 
     // Load data based on active mode
@@ -304,8 +316,8 @@ fun ConsolidationScreen(
         val tabs = listOf("முப்பருவ சராசரி", "பருவம் 1", "பருவம் 2", "பருவம் 3")
         TabRow(
             selectedTabIndex = viewModeTab,
-            containerColor = Color.White,
-            contentColor = NavyPrimary,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth()
         ) {
             tabs.forEachIndexed { index, label ->
@@ -394,7 +406,7 @@ fun ConsolidationScreen(
                     Text(
                         text = "${currentSection.description} • மொத்தம்: ${activeRecords.size} மாணவர்கள்",
                         fontSize = 11.5.sp,
-                        color = Color.Gray
+                        color = TextMuted
                     )
                 } else {
                     Text(
@@ -412,7 +424,7 @@ fun ConsolidationScreen(
                     Text(
                         text = "வகுப்பு: $selectedClass • ${activeRecords.size} மாணவர்கள்",
                         fontSize = 11.5.sp,
-                        color = Color.Gray
+                        color = TextMuted
                     )
                 }
 
@@ -575,6 +587,34 @@ fun ConsolidationScreen(
                             Text("A4 அட்டைகள்", fontSize = 11.5.sp, color = NavyDark, fontWeight = FontWeight.Bold, maxLines = 1)
                         }
                     }
+
+                    // AI Class Audit Button
+                    Button(
+                        onClick = { showAiClassAuditDialog = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isDark) Color(0xFF1E3A8A) else Color(0xFFDBEAFE)
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                        modifier = Modifier
+                            .height(38.dp)
+                            .testTag("consolidation_ai_audit_btn")
+                    ) {
+                        Icon(
+                            Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            modifier = Modifier.size(15.dp),
+                            tint = if (isDark) Color(0xFF93C5FD) else NavyPrimary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            "🤖 AI ஆய்வு",
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            color = if (isDark) Color(0xFF93C5FD) else NavyPrimary
+                        )
+                    }
                 }
             }
         }
@@ -582,9 +622,9 @@ fun ConsolidationScreen(
         // Promotion Banner when in Term 3 or Annual Consolidated view
         if (viewModeTab == 3 || viewModeTab == 0) {
             Surface(
-                color = Color(0xFFFEF3C7),
+                color = if (isDark) Color(0xFF2A1F0D) else Color(0xFFFEF3C7),
                 shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, Color(0xFFFDE68A)),
+                border = BorderStroke(1.dp, if (isDark) Color(0xFF5C4312) else Color(0xFFFDE68A)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 4.dp)
@@ -649,7 +689,7 @@ fun ConsolidationScreen(
                     } else {
                         "வகுப்பு $selectedClass -ல் மாணவர்கள் பதிவு செய்யப்படவில்லை."
                     },
-                    color = Color.DarkGray,
+                    color = TextMuted,
                     fontSize = 14.sp
                 )
             }
@@ -675,7 +715,7 @@ fun ConsolidationScreen(
                     item {
                         Card(
                             shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            colors = CardDefaults.cardColors(containerColor = CardBg),
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
                             Column(
@@ -695,7 +735,7 @@ fun ConsolidationScreen(
                                             text = if (schoolProfile.udiseCode.isNotBlank()) "${schoolProfile.schoolName} (UDISE: ${schoolProfile.udiseCode})" else schoolProfile.schoolName,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
-                                            color = NavyPrimary
+                                            color = TextNavy
                                         )
                                         Text(
                                             text = "2026-27 மாணவர் மதிப்பெண் பதிவேடு பருவம் : $viewModeTab",
@@ -707,7 +747,7 @@ fun ConsolidationScreen(
                                             text = "புதிய பாடத்திட்டம் வகுப்பு : $selectedClass     பாடம் : ${selectedPrimarySubject!!.tamilName} (${selectedPrimarySubject!!.name})",
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 12.sp,
-                                            color = Color(0xFF1E3A8A)
+                                            color = TextNavy
                                         )
                                     }
 
@@ -751,12 +791,12 @@ fun ConsolidationScreen(
                                             text = if (schoolProfile.udiseCode.isNotBlank()) "${schoolProfile.schoolName} (UDISE: ${schoolProfile.udiseCode})" else schoolProfile.schoolName,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
-                                            color = NavyPrimary
+                                            color = TextNavy
                                         )
                                         Text(
                                             text = if (schoolProfile.udiseCode.isNotBlank()) "${schoolProfile.unionName}   |   ${schoolProfile.districtName}   |   UDISE: ${schoolProfile.udiseCode}" else "${schoolProfile.unionName}   |   ${schoolProfile.districtName}",
                                             fontSize = 12.sp,
-                                            color = Color.DarkGray
+                                            color = TextMuted
                                         )
                                         Text(
                                             text = if (isGroupMode) {
@@ -889,6 +929,24 @@ fun ConsolidationScreen(
             }
         )
     }
+
+    // AI Class Audit Dialog
+    if (showAiClassAuditDialog) {
+        val auditTerm = if (viewModeTab in 1..3) viewModeTab else 1
+        val auditClass = if (isGroupMode) currentSection.classes.firstOrNull() ?: 1 else selectedClass
+        AiClassAuditDialog(
+            stdClass = auditClass,
+            term = auditTerm,
+            records = activeRecords,
+            onDismiss = { showAiClassAuditDialog = false },
+            onAutoFixAllAttendanceErrors = {
+                val defaultDays = schoolProfile.getWorkingDaysForTerm(auditTerm)
+                viewModel.applySchoolWorkingDaysToAllStudents(defaultDays)
+                Toast.makeText(context, "பள்ளி வேலை நாட்களின்படி ($defaultDays நாட்கள்) வருகை சரிசெய்யப்பட்டது", Toast.LENGTH_SHORT).show()
+                showAiClassAuditDialog = false
+            }
+        )
+    }
 }
 
 @Composable
@@ -929,8 +987,10 @@ fun TableHeader(
     isClass8: Boolean = false,
     isClass3: Boolean = false
 ) {
-    val borderColor = Color.LightGray
-    val thBg = Color(0xFFEEF2FF)
+    val isDark = isSystemInDarkTheme()
+    val borderColor = BorderSubtle
+    val thBg = if (isDark) Color(0xFF1E293B) else Color(0xFFEEF2FF)
+    val subHeaderBg = if (isDark) Color(0xFF334155) else Color(0xFFE0E7FF)
 
     val mainSubjects = remember(subjects) { subjects.filter { it != Subject.PE } }
     val hasPe = remember(subjects) { subjects.contains(Subject.PE) }
@@ -979,7 +1039,7 @@ fun TableHeader(
         Row(
             modifier = Modifier
                 .height(24.dp)
-                .background(Color(0xFFE0E7FF)),
+                .background(subHeaderBg),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TableCell(text = "", width = 36.dp)
@@ -1043,8 +1103,13 @@ fun StudentRow(
     val mainSubjects = remember(subjects) { subjects.filter { it != Subject.PE } }
     val hasPe = remember(subjects) { subjects.contains(Subject.PE) }
 
-    val borderColor = Color(0xFFE2E8F0)
-    val rowBg = if (sNo % 2 == 0) Color(0xFFFAFAFA) else Color.White
+    val isDark = isSystemInDarkTheme()
+    val borderColor = BorderSubtle
+    val rowBg = if (isDark) {
+        if (sNo % 2 == 0) Color(0xFF1E293B) else Color(0xFF0F172A)
+    } else {
+        if (sNo % 2 == 0) Color(0xFFF8FAFC) else Color.White
+    }
 
     Row(
         modifier = Modifier
@@ -1198,7 +1263,7 @@ fun TableCell(
     isSubHeader: Boolean = false,
     isBold: Boolean = false,
     textAlign: TextAlign = TextAlign.Center,
-    textColor: Color = Color.Black
+    textColor: Color = TextDark
 ) {
     Box(
         modifier = Modifier
@@ -1224,8 +1289,10 @@ fun TableCell(
 
 @Composable
 fun Class1To3OfficialHeader(isClass3: Boolean = false) {
-    val borderColor = Color.LightGray
-    val thBg = Color(0xFFEEF2FF)
+    val isDark = isSystemInDarkTheme()
+    val borderColor = BorderSubtle
+    val thBg = if (isDark) Color(0xFF1E293B) else Color(0xFFEEF2FF)
+    val subHeaderBg = if (isDark) Color(0xFF334155) else Color(0xFFE0E7FF)
 
     val naney1Title = if (isClass3) "நானே செய்வேன் - 1 [20]" else "நானே செய்வேன் - 1 [25]"
     val naney2Title = if (isClass3) "நானே செய்வேன் - 2 [20]" else "நானே செய்வேன் - 2 [25]"
@@ -1255,9 +1322,9 @@ fun Class1To3OfficialHeader(isClass3: Boolean = false) {
             TableCell(text = "வ.எண்", width = 36.dp, isHeader = true)
             TableCell(text = "சே.எண்", width = 54.dp, isHeader = true)
             TableCell(text = "மாணவர் பெயர்", width = 130.dp, isHeader = true)
-            TableCell(text = naney1Title, width = 195.dp, isHeader = true, textColor = Color(0xFF991B1B))
-            TableCell(text = naney2Title, width = 195.dp, isHeader = true, textColor = Color(0xFF991B1B))
-            TableCell(text = thiranariTitle, width = 140.dp, isHeader = true, textColor = Color(0xFF92400E))
+            TableCell(text = naney1Title, width = 195.dp, isHeader = true, textColor = Color(0xFFF87171))
+            TableCell(text = naney2Title, width = 195.dp, isHeader = true, textColor = Color(0xFFF87171))
+            TableCell(text = thiranariTitle, width = 140.dp, isHeader = true, textColor = Color(0xFFFBBF24))
             TableCell(text = "மொத்தம்", width = 56.dp, isHeader = true)
             TableCell(text = "விழுக்காடு", width = 56.dp, isHeader = true)
         }
@@ -1266,7 +1333,7 @@ fun Class1To3OfficialHeader(isClass3: Boolean = false) {
         Row(
             modifier = Modifier
                 .height(24.dp)
-                .background(Color(0xFFE0E7FF)),
+                .background(subHeaderBg),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TableCell(text = "", width = 36.dp)
@@ -1308,8 +1375,13 @@ fun Class1To3OfficialStudentRow(
     thiranariWri: Int,
     total: Int
 ) {
-    val borderColor = Color(0xFFE2E8F0)
-    val rowBg = if (sNo % 2 == 0) Color(0xFFFAFAFA) else Color.White
+    val isDark = isSystemInDarkTheme()
+    val borderColor = BorderSubtle
+    val rowBg = if (isDark) {
+        if (sNo % 2 == 0) Color(0xFF1E293B) else Color(0xFF0F172A)
+    } else {
+        if (sNo % 2 == 0) Color(0xFFF8FAFC) else Color.White
+    }
 
     Row(
         modifier = Modifier

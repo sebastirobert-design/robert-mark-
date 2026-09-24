@@ -170,6 +170,46 @@ class SchoolMarksViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun updateSchoolProfileAndApplyWorkingDays(
+        schoolName: String,
+        udiseCode: String,
+        unionName: String,
+        districtName: String,
+        academicYear: String,
+        headmasterName: String,
+        schoolWorkingDays: Int
+    ) {
+        viewModelScope.launch {
+            repository.updateSchoolProfile(
+                SchoolProfile(
+                    id = 1,
+                    schoolName = schoolName.trim(),
+                    udiseCode = udiseCode.trim(),
+                    unionName = unionName.trim(),
+                    districtName = districtName.trim(),
+                    academicYear = academicYear.trim(),
+                    headmasterName = headmasterName.trim(),
+                    term1WorkingDays = schoolWorkingDays,
+                    term2WorkingDays = schoolWorkingDays,
+                    term3WorkingDays = schoolWorkingDays
+                )
+            )
+            repository.applySchoolWorkingDaysToAllStudents(schoolWorkingDays)
+            uiMessage.value = "பள்ளி விவரங்கள் & அனைத்து மாணவர்களுக்கும் ($schoolWorkingDays) வேலை நாட்கள் சேமிக்கப்பட்டன!"
+        }
+    }
+
+    fun applySchoolWorkingDaysToAllStudents(
+        workingDays: Int,
+        onComplete: () -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            repository.applySchoolWorkingDaysToAllStudents(workingDays)
+            uiMessage.value = "அனைத்து மாணவர்களுக்கும் பள்ளி வேலை நாட்கள் ($workingDays) வெற்றிகரமாக பொருத்தப்பட்டன!"
+            onComplete()
+        }
+    }
+
     fun applyWorkingDaysToAllStudents(
         term1Days: Int,
         term2Days: Int,

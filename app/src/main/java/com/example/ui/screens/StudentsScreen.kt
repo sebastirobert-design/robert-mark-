@@ -73,9 +73,13 @@ import com.example.ui.components.ClassChipsSelector
 import com.example.ui.dialogs.ClassPromotionDialog
 import com.example.ui.theme.AcademicBlue
 import com.example.ui.theme.AmberGold
+import com.example.ui.theme.CardBg
 import com.example.ui.theme.EmeraldPass
 import com.example.ui.theme.NavyDark
 import com.example.ui.theme.NavyPrimary
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextNavy
 import com.example.util.CsvStudentImporter
 import com.example.viewmodel.SchoolMarksViewModel
 
@@ -225,13 +229,13 @@ fun StudentsScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Surface(
                             shape = CircleShape,
-                            color = Color(0xFFE2E8F0),
+                            color = NavyPrimary.copy(alpha = 0.12f),
                             modifier = Modifier.size(64.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
-                                tint = Color.Gray,
+                                tint = TextMuted,
                                 modifier = Modifier.padding(16.dp)
                             )
                         }
@@ -239,14 +243,14 @@ fun StudentsScreen(
                         Text(
                             text = "வகுப்பு $selectedClass -ல் மாணவர்கள் பதிவு செய்யப்படவில்லை",
                             fontWeight = FontWeight.Medium,
-                            color = Color.DarkGray,
+                            color = TextDark,
                             fontSize = 14.sp
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = "கீழே உள்ள 'சேர்க்கை' பொத்தானை அழுத்தி புதிய மாணவர்களை பதிவு செய்யவும்.",
                             fontSize = 12.sp,
-                            color = Color.Gray
+                            color = TextMuted
                         )
                     }
                 }
@@ -383,7 +387,7 @@ fun StudentsScreen(
                 Text(
                     text = "இந்த ஆப்பில் தற்போது உள்ள மாதிரி மாணவர்களின் பெயர்கள் மற்றும் மதிப்பெண்கள் முழுவதும் நீக்கப்படும்.\n\nநீக்கிய பின், உங்கள் பள்ளி Google Sheet-லிருந்து புதிய மாணவர் பட்டியலை நேரடியாக 'Sheet பதிவேற்றம்' பொத்தான் மூலம் பதிவேற்றலாம்.",
                     fontSize = 13.sp,
-                    color = Color.DarkGray,
+                    color = TextDark,
                     lineHeight = 18.sp
                 )
             },
@@ -417,7 +421,7 @@ fun StudentCard(
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -447,7 +451,7 @@ fun StudentCard(
                     Text(
                         text = "எண்",
                         fontSize = 7.5.sp,
-                        color = Color.Gray
+                        color = TextMuted
                     )
                 }
             }
@@ -461,7 +465,7 @@ fun StudentCard(
                         text = student.name,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = NavyDark
+                        color = TextNavy
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Surface(
@@ -484,13 +488,13 @@ fun StudentCard(
                     Text(
                         text = "பிரிவு: ${student.section} • ${student.gender} • ${student.community}",
                         fontSize = 11.sp,
-                        color = Color.DarkGray
+                        color = TextDark
                     )
                     if (student.parentName.isNotEmpty()) {
                         Text(
                             text = " • த/பெ: ${student.parentName}",
                             fontSize = 11.sp,
-                            color = Color.Gray
+                            color = TextMuted
                         )
                     }
                 }
@@ -755,7 +759,7 @@ fun CsvImportDialog(
                         Text(
                             text = "1. Google Sheet அல்லது Excel-ல் EMIS எண், பெயர், வகுப்பு, பெற்றோர் பெயர் உள்ள வரிகளை அப்படியே Copy செய்து கீழே Paste செய்யவும்.\n2. அல்லது Google Sheet-ஐ 'கோப்பு > பதிவிறக்கு > .csv' செய்து 'கோப்பைத் தேர்ந்தெடு' அழுத்தவும்.",
                             fontSize = 11.sp,
-                            color = Color.DarkGray,
+                            color = TextDark,
                             lineHeight = 16.sp
                         )
                         Spacer(modifier = Modifier.height(6.dp))
@@ -842,7 +846,7 @@ fun CsvImportDialog(
                                 Text(
                                     text = classCounts.joinToString(" • "),
                                     fontSize = 11.sp,
-                                    color = Color.DarkGray
+                                    color = TextDark
                                 )
                             }
                         }
