@@ -21,8 +21,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -70,10 +72,14 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.CceGradeEvaluator
@@ -2045,21 +2051,26 @@ private fun RegisterEditableCell(
     onValueChange: (Int) -> Unit
 ) {
     val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
     var textVal by remember(value) { mutableStateOf(value.toString()) }
 
     Box(
         modifier = Modifier
             .width(widthDp.dp)
             .height(38.dp)
-            .padding(2.dp),
+            .padding(horizontal = 4.dp, vertical = 3.dp),
         contentAlignment = Alignment.Center
     ) {
-        OutlinedTextField(
+        BasicTextField(
             value = textVal,
             onValueChange = { input ->
-                textVal = input
-                val parsed = input.toIntOrNull()
-                if (parsed != null) {
+                // Clean input: only digits allowed
+                val filtered = input.filter { it.isDigit() }
+                if (filtered.isEmpty()) {
+                    textVal = ""
+                    onValueChange(0)
+                } else {
+                    val parsed = filtered.toIntOrNull() ?: 0
                     if (parsed > maxVal) {
                         val alertMsg = when (fieldName) {
                             "oral" -> "வாய்மொழி மதிப்பெண் அதிகபட்சம் $maxVal மட்டுமே இருக்க வேண்டும்!"
@@ -2068,13 +2079,55 @@ private fun RegisterEditableCell(
                             else -> "அதிகபட்ச மதிப்பெண் $maxVal மட்டுமே இருக்க வேண்டும்!"
                         }
                         Toast.makeText(context, alertMsg, Toast.LENGTH_SHORT).show()
+                        val clamped = maxVal
+                        textVal = clamped.toString()
+                        onValueChange(clamped)
+                    } else {
+                        textVal = filtered
+                        onValueChange(parsed)
                     }
-                    onValueChange(parsed.coerceIn(0, maxVal))
                 }
             },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
             singleLine = true,
-            modifier = Modifier.fillMaxSize()
+            textStyle = TextStyle(
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+            ),
+            cursorBrush = SolidColor(if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7)),
+            modifier = Modifier.fillMaxSize(),
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            color = if (isDark) Color(0xFF1E293B) else Color(0xFFF8FAFC),
+                            shape = RoundedCornerShape(6.dp)
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = if (isDark) Color(0xFF475569) else Color(0xFFCBD5E1),
+                            shape = RoundedCornerShape(6.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (textVal.isEmpty()) {
+                        Text(
+                            text = "0",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    innerTextField()
+                }
+            }
         )
     }
 }
