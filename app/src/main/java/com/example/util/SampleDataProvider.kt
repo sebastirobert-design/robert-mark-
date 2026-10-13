@@ -42,8 +42,8 @@ object SampleDataProvider {
         if (hasOldSampleData) {
             populateOfficialStudents(repository, forceReset = true)
         } else {
-            // Ensure any existing students in Class 1 to 3 have EVS marks populated
-            val primaryStudents = existingStudents.filter { it.stdClass in 1..3 }
+            // Ensure any existing students in Class 1 to 2 have EVS marks populated (Class 3 has Science & Social, not EVS)
+            val primaryStudents = existingStudents.filter { it.stdClass in 1..2 }
             for (student in primaryStudents) {
                 for (term in 1..3) {
                     val marks = repository.getMarksForStudentAndTerm(student.id, term).firstOrNull() ?: emptyList()
@@ -162,15 +162,15 @@ object SampleDataProvider {
                             )
                         )
                     } else if (student.stdClass == 3) {
-                        // Class 3: நானே செய்வேன் 1 [20] + நானே செய்வேன் 2 [20] + திரனறி மதிப்பீடு [60] = 100
-                        val n1Oral = 6 + (studentId % 3).toInt()
-                        val n1Act = 6 + (studentId % 3).toInt()
-                        val n1Wri = 3 + (studentId % 2).toInt()
-                        val n2Oral = 6 + (studentId % 3).toInt()
-                        val n2Act = 6 + (studentId % 3).toInt()
-                        val n2Wri = 3 + (studentId % 2).toInt()
-                        val thOral = 8 + (studentId % 3).toInt()
-                        val thWri = 42 + ((studentId * 2) % 9).toInt()
+                        // Class 3: நானே செய்வேன் 1 [20] (Oral 5, Act 10, Wri 5) + நானே செய்வேன் 2 [20] + திரனறி மதிப்பீடு [60] (Oral 10, Wri 50) = 100
+                        val n1Oral = 3 + (studentId % 3).toInt() // 3, 4, 5 (Max: 5)
+                        val n1Act = 7 + (studentId % 3).toInt()  // 7, 8, 9 (Max: 10)
+                        val n1Wri = 3 + (studentId % 2).toInt()  // 3, 4 (Max: 5)
+                        val n2Oral = 3 + (studentId % 3).toInt() // 3, 4, 5 (Max: 5)
+                        val n2Act = 7 + (studentId % 3).toInt()  // 7, 8, 9 (Max: 10)
+                        val n2Wri = 3 + (studentId % 2).toInt()  // 3, 4 (Max: 5)
+                        val thOral = 8 + (studentId % 3).toInt() // 8, 9, 10 (Max: 10)
+                        val thWri = 40 + ((studentId * 2) % 9).toInt() // 40..48 (Max: 50)
                         val tot = n1Oral + n1Act + n1Wri + n2Oral + n2Act + n2Wri + thOral + thWri
                         val level = if (tot >= 80) "மலர்" else if (tot >= 60) "மொட்டு" else "அரும்பு"
                         val grade = if (tot >= 80) "A" else if (tot >= 60) "B" else "C"

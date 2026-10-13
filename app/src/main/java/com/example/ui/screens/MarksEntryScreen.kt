@@ -673,7 +673,7 @@ fun StudentMarkForm(
                         Column(modifier = Modifier.weight(1f)) {
                             OutlinedTextField(
                                 value = workingDaysStr,
-                                onValueChange = { workingDaysStr = it },
+                                onValueChange = { workingDaysStr = it.filter { ch -> ch.isDigit() } },
                                 label = { Text("பருவம் $term வேலை நாட்கள்") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
@@ -689,7 +689,7 @@ fun StudentMarkForm(
 
                         OutlinedTextField(
                             value = presentDaysStr,
-                            onValueChange = { presentDaysStr = it },
+                            onValueChange = { presentDaysStr = it.filter { ch -> ch.isDigit() } },
                             label = { Text("வருகை நாட்கள்") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
@@ -951,36 +951,39 @@ fun StudentMarkForm(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     OutlinedTextField(
-                                        value = data.naney1Oral.toString(),
+                                        value = if (data.naney1Oral == 0) "" else data.naney1Oral.toString(),
                                         onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                            val v = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
                                             marksState[subject] = data.copy(naney1Oral = v.coerceIn(0, 10))
                                         },
                                         label = { Text("வாய்மொழி [10]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.naney1Activity.toString(),
+                                        value = if (data.naney1Activity == 0) "" else data.naney1Activity.toString(),
                                         onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                            val v = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
                                             marksState[subject] = data.copy(naney1Activity = v.coerceIn(0, 10))
                                         },
                                         label = { Text("செயல்பாடு [10]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.naney1Written.toString(),
+                                        value = if (data.naney1Written == 0) "" else data.naney1Written.toString(),
                                         onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                            val v = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
                                             marksState[subject] = data.copy(naney1Written = v.coerceIn(0, 5))
                                         },
                                         label = { Text("எழுத்துவழி [5]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1031,36 +1034,39 @@ fun StudentMarkForm(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     OutlinedTextField(
-                                        value = data.naney2Oral.toString(),
+                                        value = if (data.naney2Oral == 0) "" else data.naney2Oral.toString(),
                                         onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                            val v = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
                                             marksState[subject] = data.copy(naney2Oral = v.coerceIn(0, 10))
                                         },
                                         label = { Text("வாய்மொழி [10]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.naney2Activity.toString(),
+                                        value = if (data.naney2Activity == 0) "" else data.naney2Activity.toString(),
                                         onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                            val v = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
                                             marksState[subject] = data.copy(naney2Activity = v.coerceIn(0, 10))
                                         },
                                         label = { Text("செயல்பாடு [10]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.naney2Written.toString(),
+                                        value = if (data.naney2Written == 0) "" else data.naney2Written.toString(),
                                         onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                            val v = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
                                             marksState[subject] = data.copy(naney2Written = v.coerceIn(0, 5))
                                         },
                                         label = { Text("எழுத்துவழி [5]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1109,24 +1115,26 @@ fun StudentMarkForm(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     OutlinedTextField(
-                                        value = data.thiranariOral.toString(),
+                                        value = if (data.thiranariOral == 0) "" else data.thiranariOral.toString(),
                                         onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                            val v = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
                                             marksState[subject] = data.copy(thiranariOral = v.coerceIn(0, 10))
                                         },
                                         label = { Text("வாய்மொழி [10]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.thiranariWritten.toString(),
+                                        value = if (data.thiranariWritten == 0) "" else data.thiranariWritten.toString(),
                                         onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                            val v = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
                                             marksState[subject] = data.copy(thiranariWritten = v.coerceIn(0, 40))
                                         },
                                         label = { Text("எழுத்துவழி [40]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1178,48 +1186,51 @@ fun StudentMarkForm(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     OutlinedTextField(
-                                        value = data.naney1Oral.toString(),
+                                        value = if (data.naney1Oral == 0) "" else data.naney1Oral.toString(),
                                         onValueChange = { input ->
-                                            val v = input.toIntOrNull() ?: 0
+                                            val filtered = input.filter { it.isDigit() }
+                                            val v = filtered.toIntOrNull() ?: 0
                                             if (v > 5) {
                                                 Toast.makeText(context, "வாய்மொழி மதிப்பெண் அதிகபட்சம் 5 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
                                             }
                                             marksState[subject] = data.copy(naney1Oral = v.coerceIn(0, 5))
                                         },
                                         label = { Text("வாய்மொழி [5]") },
-                                        placeholder = { Text("Max: 5") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.naney1Activity.toString(),
+                                        value = if (data.naney1Activity == 0) "" else data.naney1Activity.toString(),
                                         onValueChange = { input ->
-                                            val v = input.toIntOrNull() ?: 0
+                                            val filtered = input.filter { it.isDigit() }
+                                            val v = filtered.toIntOrNull() ?: 0
                                             if (v > 10) {
                                                 Toast.makeText(context, "செயல்பாடு மதிப்பெண் அதிகபட்சம் 10 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
                                             }
                                             marksState[subject] = data.copy(naney1Activity = v.coerceIn(0, 10))
                                         },
                                         label = { Text("செயல்பாடு [10]") },
-                                        placeholder = { Text("Max: 10") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.naney1Written.toString(),
+                                        value = if (data.naney1Written == 0) "" else data.naney1Written.toString(),
                                         onValueChange = { input ->
-                                            val v = input.toIntOrNull() ?: 0
+                                            val filtered = input.filter { it.isDigit() }
+                                            val v = filtered.toIntOrNull() ?: 0
                                             if (v > 5) {
                                                 Toast.makeText(context, "எழுத்துவழி மதிப்பெண் அதிகபட்சம் 5 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
                                             }
                                             marksState[subject] = data.copy(naney1Written = v.coerceIn(0, 5))
                                         },
                                         label = { Text("எழுத்துவழி [5]") },
-                                        placeholder = { Text("Max: 5") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1270,48 +1281,51 @@ fun StudentMarkForm(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     OutlinedTextField(
-                                        value = data.naney2Oral.toString(),
+                                        value = if (data.naney2Oral == 0) "" else data.naney2Oral.toString(),
                                         onValueChange = { input ->
-                                            val v = input.toIntOrNull() ?: 0
+                                            val filtered = input.filter { it.isDigit() }
+                                            val v = filtered.toIntOrNull() ?: 0
                                             if (v > 5) {
                                                 Toast.makeText(context, "வாய்மொழி மதிப்பெண் அதிகபட்சம் 5 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
                                             }
                                             marksState[subject] = data.copy(naney2Oral = v.coerceIn(0, 5))
                                         },
                                         label = { Text("வாய்மொழி [5]") },
-                                        placeholder = { Text("Max: 5") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.naney2Activity.toString(),
+                                        value = if (data.naney2Activity == 0) "" else data.naney2Activity.toString(),
                                         onValueChange = { input ->
-                                            val v = input.toIntOrNull() ?: 0
+                                            val filtered = input.filter { it.isDigit() }
+                                            val v = filtered.toIntOrNull() ?: 0
                                             if (v > 10) {
                                                 Toast.makeText(context, "செயல்பாடு மதிப்பெண் அதிகபட்சம் 10 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
                                             }
                                             marksState[subject] = data.copy(naney2Activity = v.coerceIn(0, 10))
                                         },
                                         label = { Text("செயல்பாடு [10]") },
-                                        placeholder = { Text("Max: 10") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.naney2Written.toString(),
+                                        value = if (data.naney2Written == 0) "" else data.naney2Written.toString(),
                                         onValueChange = { input ->
-                                            val v = input.toIntOrNull() ?: 0
+                                            val filtered = input.filter { it.isDigit() }
+                                            val v = filtered.toIntOrNull() ?: 0
                                             if (v > 5) {
                                                 Toast.makeText(context, "எழுத்துவழி மதிப்பெண் அதிகபட்சம் 5 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
                                             }
                                             marksState[subject] = data.copy(naney2Written = v.coerceIn(0, 5))
                                         },
                                         label = { Text("எழுத்துவழி [5]") },
-                                        placeholder = { Text("Max: 5") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1360,24 +1374,32 @@ fun StudentMarkForm(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     OutlinedTextField(
-                                        value = data.thiranariOral.toString(),
-                                        onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                        value = if (data.thiranariOral == 0) "" else data.thiranariOral.toString(),
+                                        onValueChange = { input ->
+                                            val v = input.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+                                            if (v > 10) {
+                                                Toast.makeText(context, "வாய்மொழி மதிப்பெண் அதிகபட்சம் 10 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                            }
                                             marksState[subject] = data.copy(thiranariOral = v.coerceIn(0, 10))
                                         },
                                         label = { Text("வாய்மொழி [10]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
 
                                     OutlinedTextField(
-                                        value = data.thiranariWritten.toString(),
-                                        onValueChange = {
-                                            val v = it.toIntOrNull() ?: 0
+                                        value = if (data.thiranariWritten == 0) "" else data.thiranariWritten.toString(),
+                                        onValueChange = { input ->
+                                            val v = input.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+                                            if (v > 50) {
+                                                Toast.makeText(context, "எழுத்துவழி மதிப்பெண் அதிகபட்சம் 50 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                            }
                                             marksState[subject] = data.copy(thiranariWritten = v.coerceIn(0, 50))
                                         },
                                         label = { Text("எழுத்துவழி [50]") },
+                                        placeholder = { Text("0") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
@@ -1463,24 +1485,32 @@ fun StudentMarkForm(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             OutlinedTextField(
-                                value = data.faTotal.toString(),
-                                onValueChange = {
-                                    val v = it.toIntOrNull() ?: 0
+                                value = if (data.faTotal == 0) "" else data.faTotal.toString(),
+                                onValueChange = { input ->
+                                    val v = input.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+                                    if (v > 40) {
+                                        Toast.makeText(context, "வளர் அறி FA அதிகபட்சம் 40 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                    }
                                     marksState[subject] = data.copy(faTotal = v.coerceIn(0, 40))
                                 },
                                 label = { Text("வளர் அறி FA [40]") },
+                                placeholder = { Text("0") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
                             )
 
                             OutlinedTextField(
-                                value = data.sa.toString(),
-                                onValueChange = {
-                                    val v = it.toIntOrNull() ?: 0
+                                value = if (data.sa == 0) "" else data.sa.toString(),
+                                onValueChange = { input ->
+                                    val v = input.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+                                    if (v > 60) {
+                                        Toast.makeText(context, "தொகுத்தறி SA அதிகபட்சம் 60 மட்டுமே இருக்க வேண்டும்!", Toast.LENGTH_SHORT).show()
+                                    }
                                     marksState[subject] = data.copy(sa = v.coerceIn(0, 60))
                                 },
                                 label = { Text("தொகுத்தறி SA [60]") },
+                                placeholder = { Text("0") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
@@ -1971,32 +2001,32 @@ fun Class1To3RegisterTableView(
                                 RegisterCell(student.name, 140, alignLeft = true)
 
                                 // Editable cells: Naney 1
-                                RegisterEditableCell(n1Oral, 80, n1OralMax, "oral") {
+                                RegisterEditableCell(n1Oral, 80, n1OralMax, "oral", "${student.id}_${selectedSubject.key}_n1Oral") {
                                     classMarksMap[student.id] = currentInput.copy(naney1Oral = it)
                                 }
-                                RegisterEditableCell(n1Act, 80, n1ActMax, "activity") {
+                                RegisterEditableCell(n1Act, 80, n1ActMax, "activity", "${student.id}_${selectedSubject.key}_n1Act") {
                                     classMarksMap[student.id] = currentInput.copy(naney1Activity = it)
                                 }
-                                RegisterEditableCell(n1Wri, 80, n1WriMax, "written") {
+                                RegisterEditableCell(n1Wri, 80, n1WriMax, "written", "${student.id}_${selectedSubject.key}_n1Wri") {
                                     classMarksMap[student.id] = currentInput.copy(naney1Written = it)
                                 }
 
                                 // Editable cells: Naney 2
-                                RegisterEditableCell(n2Oral, 80, n2OralMax, "oral") {
+                                RegisterEditableCell(n2Oral, 80, n2OralMax, "oral", "${student.id}_${selectedSubject.key}_n2Oral") {
                                     classMarksMap[student.id] = currentInput.copy(naney2Oral = it)
                                 }
-                                RegisterEditableCell(n2Act, 80, n2ActMax, "activity") {
+                                RegisterEditableCell(n2Act, 80, n2ActMax, "activity", "${student.id}_${selectedSubject.key}_n2Act") {
                                     classMarksMap[student.id] = currentInput.copy(naney2Activity = it)
                                 }
-                                RegisterEditableCell(n2Wri, 80, n2WriMax, "written") {
+                                RegisterEditableCell(n2Wri, 80, n2WriMax, "written", "${student.id}_${selectedSubject.key}_n2Wri") {
                                     classMarksMap[student.id] = currentInput.copy(naney2Written = it)
                                 }
 
                                 // Editable cells: Thiranari
-                                RegisterEditableCell(thOral, 85, thOralMax, "th_oral") {
+                                RegisterEditableCell(thOral, 85, thOralMax, "oral", "${student.id}_${selectedSubject.key}_thOral") {
                                     classMarksMap[student.id] = currentInput.copy(thiranariOral = it)
                                 }
-                                RegisterEditableCell(thWri, 85, thWriMax, "th_wri") {
+                                RegisterEditableCell(thWri, 85, thWriMax, "written", "${student.id}_${selectedSubject.key}_thWri") {
                                     classMarksMap[student.id] = currentInput.copy(thiranariWritten = it)
                                 }
 
@@ -2048,11 +2078,19 @@ private fun RegisterEditableCell(
     widthDp: Int,
     maxVal: Int,
     fieldName: String = "",
+    cellKey: Any? = null,
     onValueChange: (Int) -> Unit
 ) {
     val context = LocalContext.current
     val isDark = isSystemInDarkTheme()
-    var textVal by remember(value) { mutableStateOf(value.toString()) }
+    var textVal by remember(cellKey) { mutableStateOf(if (value == 0) "" else value.toString()) }
+
+    LaunchedEffect(value) {
+        val currentInt = textVal.toIntOrNull() ?: 0
+        if (currentInt != value) {
+            textVal = if (value == 0) "" else value.toString()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -2083,7 +2121,12 @@ private fun RegisterEditableCell(
                         textVal = clamped.toString()
                         onValueChange(clamped)
                     } else {
-                        textVal = filtered
+                        val normalized = if (filtered.length > 1 && filtered.startsWith("0")) {
+                            parsed.toString()
+                        } else {
+                            filtered
+                        }
+                        textVal = normalized
                         onValueChange(parsed)
                     }
                 }

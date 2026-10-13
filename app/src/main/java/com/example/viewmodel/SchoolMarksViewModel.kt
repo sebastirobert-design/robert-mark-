@@ -836,14 +836,14 @@ data class MarksInputData(
     val sa: Int = 0,
     val directTotal: Int = 0,       // எட்டாம் வகுப்பு: நேரடி 100 மதிப்பெண் (வளரறி / தொகுத்தறி பிரிக்காமல்)
     // வகுப்பு 1-3 புதிய பாடத்திட்ட கூறுகள்:
-    val naney1Oral: Int = 10,       // நானே செய்வேன் - 1: வாய்மொழி [10]
-    val naney1Activity: Int = 10,   // நானே செய்வேன் - 1: செயல்திட்டம்/செயல்பாடு [10]
-    val naney1Written: Int = 5,     // நானே செய்வேன் - 1: எழுத்துவழி [5]
-    val naney2Oral: Int = 10,       // நானே செய்வேன் - 2: வாய்மொழி [10]
-    val naney2Activity: Int = 10,   // நானே செய்வேன் - 2: செயல்திட்டம்/செயல்பாடு [10]
-    val naney2Written: Int = 5,     // நானே செய்வேன் - 2: எழுத்துவழி [5]
-    val thiranariOral: Int = 10,    // திறனறி மதிப்பீடு: வாய்மொழி [10]
-    val thiranariWritten: Int = 40  // திறனறி மதிப்பீடு: எழுத்துவழி [40]
+    val naney1Oral: Int = 0,        // நானே செய்வேன் - 1: வாய்மொழி [10 அல்லது 5]
+    val naney1Activity: Int = 0,    // நானே செய்வேன் - 1: செயல்திட்டம்/செயல்பாடு [10]
+    val naney1Written: Int = 0,     // நானே செய்வேன் - 1: எழுத்துவழி [5]
+    val naney2Oral: Int = 0,        // நானே செய்வேன் - 2: வாய்மொழி [10 அல்லது 5]
+    val naney2Activity: Int = 0,    // நானே செய்வேன் - 2: செயல்திட்டம்/செயல்பாடு [10]
+    val naney2Written: Int = 0,     // நானே செய்வேன் - 2: எழுத்துவழி [5]
+    val thiranariOral: Int = 0,     // திறனறி மதிப்பீடு: வாய்மொழி [10]
+    val thiranariWritten: Int = 0   // திறனறி மதிப்பீடு: எழுத்துவழி [40 அல்லது 50]
 ) {
     val naney1Total: Int get() = naney1Oral + naney1Activity + naney1Written
     val naney2Total: Int get() = naney2Oral + naney2Activity + naney2Written
